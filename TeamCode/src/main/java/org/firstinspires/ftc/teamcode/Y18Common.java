@@ -75,15 +75,27 @@ public class Y18Common extends OpMode {
 
     ///Dumping servos
     boolean USE_SERVO_DUMP = true;
+    double DUMP_UP = 0.45;
+    double DUMP_DOWN = 0;
     Servo servo_dump_;
-    double servo_dump_init_ = 0.0;
+    double servo_dump_init_ = DUMP_UP;
     //180, controlled by b button
+
 
     ///Servo for the intake system winch
     boolean USE_INTAKE_WINCH = true;
     Servo servo_winch_;
     double WINCH_POWER_BRAKE = CR_SERVO_STOP;
     //cont. servo, controlled by right (down) and left(up) bumpers
+    double WINCH_UP_POWER = 1;
+    double WINCH_DOWN_POWER = 0;
+
+    ///Team marker servo
+    boolean USE_SERVO_MARKER = true;
+    Servo servo_marker_;
+    /// TODO: Test + fix angles
+    double MARKER_UP_POS_ = 0.7;
+    double MARKER_DROP_POS_ = 0.0;
 
     //Front linear slide
     boolean USE_MINERALS_LIFT = true;
@@ -102,6 +114,7 @@ public class Y18Common extends OpMode {
     static final boolean USE_IMU  = true;           // use IMU sensor to turn
     BNO055IMU imu_;                         // Adafruit or RevHub IMU
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
     Orientation imu_angles_;
     double heading_ = 0.0;                                  // current heading
 
@@ -154,7 +167,6 @@ public class Y18Common extends OpMode {
         motorRB_ = hardwareMap.dcMotor.get("motor4");
 
         // Reverse motor, required for RevHub
-        /// TODO: Reverse?
         motorLF_.setDirection(DcMotor.Direction.REVERSE);
         motorLB_.setDirection(DcMotor.Direction.REVERSE);
         motorRF_.setDirection(DcMotor.Direction.REVERSE);
@@ -185,6 +197,11 @@ public class Y18Common extends OpMode {
         if(USE_SERVO_DUMP) {
             servo_dump_ = hardwareMap.servo.get("servo_dump_");
             servo_dump_.setPosition(servo_dump_init_);
+        }
+
+        if (USE_SERVO_MARKER) {
+            servo_marker_ = hardwareMap.servo.get("servo_marker_");
+            servo_marker_.setPosition(MARKER_UP_POS_);
         }
 
         if(USE_LIFT) {

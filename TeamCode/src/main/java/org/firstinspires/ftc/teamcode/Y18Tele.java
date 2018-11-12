@@ -11,12 +11,13 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
-//y for intake servos - on and off - cont. servos - done and compiles
-//b for dumping servo, up and down - 180 servo - done and compiles
+//y for intake servos - in, out, and off - cont. servos - done and compiles
+//b for dumping servo, down and up - 180 servo - done and compiles
 //right(down) and left(up) bumpers for winch (servo) that lifts up/down the entire pickup mechanism - not using toggles because they give analog value...
 //left toggle for linear slide (intake)
-
-// D-pad for landing lin-slide (up/down) - ALREADY THERE!
+// D-pad for landing lin-slide (up/down)
+//a for lowest mineral linear slide position
+//x for highest mineral linear slide position
 
 
 /**
@@ -49,25 +50,18 @@ public class Y18Tele extends Y18Common
 
     double RIGHT_POWER_RATIO = 1.00;
 
-    static final boolean USE_LOW_SEN_DRIVE = false;   // use low sensitivity drive mode for relic and balancing
-    boolean low_sen_drive_ = false;
+    static final boolean USE_LOW_SEN_DRIVE = true;   // use low sensitivity drive mode for relic and balancing
+    boolean low_sen_drive_ = true;
+
+    ///TODO: PUT IN COMMON
 
     //Intake servo variables (continuous servo)
     double INTAKE_POWER_IN = 1;
     double INTAKE_POWER_OUT = 0;
-
-    //Dumping servos (180 servo)
-    double DUMP_UP = 0;
-    double DUMP_DOWN = 0.45;
-
-    //winch variables (continuous servo)
-    double WINCH_UP_POWER = 1;
-    double WINCH_DOWN_POWER = 0;
-
     //DCmotor - lift for the linear slide at the front, called motorMineralsLift_
     double MINERALS_LIFT_UP_POWER = 0.75;
     double MINERALS_LIFT_DOWN_POWER = -0.75;
-    double MAX_MINERALS_LIFT_ENC_COUNT = 1820;
+    double MAX_MINERALS_LIFT_ENC_COUNT = 1500;
     double MIN_MINERALS_LIFT_ENC_COUNT = 0;
 
 
@@ -117,6 +111,9 @@ public class Y18Tele extends Y18Common
             motorRB_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
 
             if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
+        }
+        if(USE_MINERALS_LIFT){
+            motorMineralsLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 
@@ -391,12 +388,8 @@ public class Y18Tele extends Y18Common
         if (USE_MINERALS_LIFT) {
             /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
 
-            motorMineralsLift_.setPower(power_minerals_lift);
-            Range.clip(power_minerals_lift, -1, 1);
-
             double vly = gamepad2.left_stick_y;
             power_minerals_lift = vly;
-
 
             /* if(gamepad2.left_stick_y > 0) {
                 power_minerals_lift = MINERALS_LIFT_UP_POWER;
@@ -408,11 +401,19 @@ public class Y18Tele extends Y18Common
             ///Intake linear slide encoder count
             double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
 
-            if (Math.abs(mineral_lift_enc) <= MIN_MINERALS_LIFT_ENC_COUNT) {
+            if ( vly>0 && Math.abs(mineral_lift_enc) <= MIN_MINERALS_LIFT_ENC_COUNT) {
                 power_minerals_lift = 0.0;
-            } else if (Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT) {
+            } else if (vly<0 && Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT) {
                 power_minerals_lift = 0.0;
             }
+            /*
+            if (gamepad2.a) {
+                mineral_lift_enc = MIN_MINERALS_LIFT_ENC_COUNT;
+                motorMineralsLift_.setPosition(mineral_lift_enc);
+            } */
+
+            power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
+            motorMineralsLift_.setPower(power_minerals_lift);
 
         }
 
@@ -445,6 +446,7 @@ public class Y18Tele extends Y18Common
             }
             if( USE_LIFT && USE_ENCODER_FOR_TELEOP && show_lift_pos ) {
                 telemetry.addData("Lift EncPose", ": "+String.valueOf(motorLift_.getCurrentPosition())+", Power="+String.valueOf(motorLift_.getPower()));
+                telemetry.addData("Mineral Lift EncPose", ": "+String.valueOf(motorMineralsLift_.getCurrentPosition())+", Power="+String.valueOf(motorMineralsLift_.getPower()));
             }
             if( show_mr_range && mr_range_!=null ) {
                 telemetry.addData("MRRangeSensor", String.format("ultra/opt/dist=%4d/%.2f/%.2f",mr_range_.rawUltrasonic(),mr_range_.cmOptical(),mr_range_.getDistance(DistanceUnit.CM)));

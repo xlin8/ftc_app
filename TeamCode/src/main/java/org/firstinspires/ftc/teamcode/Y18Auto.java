@@ -62,7 +62,9 @@ public class Y18Auto extends Y18Common
 
     static final int DRIVE_PULL_PIN = 22;
 
-    static final int DRIVE_MODE_NUM = 23;                   // total number of modes
+    static final int DRIVE_DROP_MARKER = 23;
+
+    static final int DRIVE_MODE_NUM = 24;                   // total number of modes
 
 //*****************************************************************************************************************
 
@@ -311,6 +313,8 @@ public class Y18Auto extends Y18Common
         motorLB_.setPower(power_lb);
         motorRB_.setPower(power_rb);
 
+
+        ///TODO: Servo ranges???????
 
         if( USE_LIFT ) {
             /*
@@ -731,6 +735,14 @@ public class Y18Auto extends Y18Common
                     servo_lift_pin_.setPosition(LIFT_PIN_STOP);
                     gotoNextState( num_state, states, time, true );
                 }
+            } else if (m == DRIVE_DROP_MARKER) {
+                double time_drop_marker_ = time;
+                if (time_drop_marker_ - curr_state_start_t_<=3) {
+                    servo_marker_.setPosition(MARKER_DROP_POS_);
+                    mode = m;
+                } else {
+                    gotoNextState( num_state, states, time, true );
+                }
             }
 
             else if( m == DRIVE_STATE_JUMP ) {
@@ -963,54 +975,66 @@ public class Y18Auto extends Y18Common
         };
 
 
-        double [] redTrip1 = {
-                1.0, DRIVE_STOP,
+        double [] CraterTrip1 /*dummy made*/ = {
+                0.1, DRIVE_STOP,
                 1.0, DRIVE_LANDING,
-                2.0, DRIVE_PULL_PIN,
+                1.7, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
                 1.0, DRIVE_FORWARD_ENC,
                 60.0, DRIVE_STOP
         };
 
-
-        double [] redTrip1QT = {
+        double [] CraterTrip1QT = {
                 60.0, DRIVE_STOP
         };
 
-        double [] redTrip1OR = {
+        double [] CraterTrip1OR /*dummy made*/ = {
+                0.1, DRIVE_STOP,
+                1.0, DRIVE_LANDING,
+                1.7, DRIVE_PULL_PIN,
+                0.1, DRIVE_RESET_ENC_DONE,
+                1.0, DRIVE_FORWARD_ENC,
                 60.0, DRIVE_STOP
         };
 
-        double [] redTrip2 = {
+        double [] DepotTrip2 /*dummy made*/ = {
+                0.1, DRIVE_STOP,
+                1.0, DRIVE_LANDING,
+                1.7, DRIVE_PULL_PIN,
+                0.1, DRIVE_RESET_ENC_DONE,
+                1.5, DRIVE_FORWARD_ENC, ///TODO: Change for depot position
+                2.0, DRIVE_DROP_MARKER,
                 60.0, DRIVE_STOP
         };
 
-        double [] redTrip2QT = {
+        double [] DepotTrip2QT = {
                 60.0, DRIVE_STOP
         };
 
-        double [] redTrip2SQ = {
+        double [] DepotTrip2SQ = {
                 60.0, DRIVE_STOP
         };
 
-        double [] redTrip2OR = {
+        double [] DepotTrip2OR = {
                 60.0, DRIVE_STOP
         };
 
 
         /// Run red trips or test trips
-        if( trip_name_ == "RedPos1") {
-            return getDriveMode(redTrip1, t);
-        } else if( trip_name_ == "RedPos1OR") {
-            return getDriveMode(redTrip1OR, t);
-        } else if( trip_name_ == "RedPos2OR") {
-            return getDriveMode(redTrip2OR, t);
-        } else if( trip_name_ == "RedPos1QT") {
-            return getDriveMode(redTrip1QT, t);
-        } else if( trip_name_ == "RedPos2Diag") {
-            return getDriveMode(redTrip2QT, t);
-        } else if( trip_name_ == "RedPos2SQ") {
-            return getDriveMode(redTrip2SQ, t);
+        if( trip_name_ == "PosCrater1") {
+            return getDriveMode(CraterTrip1, t);
+        } else if (trip_name_ == "PosDepot2") {
+            return getDriveMode(DepotTrip2, t);
+        } else if( trip_name_ == "PosCrater1OR") {
+            return getDriveMode(CraterTrip1OR, t);
+        } else if( trip_name_ == "PosDepot2OR") {
+            return getDriveMode(DepotTrip2OR, t);
+        } else if( trip_name_ == "PosCrater1QT") {
+            return getDriveMode(CraterTrip1QT, t);
+        } else if( trip_name_ == "PosDepot2QT") {
+            return getDriveMode(DepotTrip2QT, t);
+        } else if( trip_name_ == "PosDepot2SQ") {
+            return getDriveMode(DepotTrip2SQ, t);
         } else if( trip_name_ == "TestEncDrive") {
             return getDriveMode(testTrip2, t);
         } else if( trip_name_ == "TestSimpleTrip") {
@@ -1018,7 +1042,7 @@ public class Y18Auto extends Y18Common
         } else if( trip_name_ == "TestCalDist") {
             return getDriveMode(testTrip1B, t);
         } else {
-            return getDriveMode(redTrip1, t);
+            return getDriveMode(CraterTrip1, t);
         }
     }
 
