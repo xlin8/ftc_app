@@ -18,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 // D-pad for landing lin-slide (up/down)
 //a for lowest mineral linear slide position
 //x for highest mineral linear slide position
+//right toggle for extension intake linear slide
 
 
 /**
@@ -63,6 +64,10 @@ public class Y18Tele extends Y18Common
     double MINERALS_LIFT_DOWN_POWER = -0.75;
     double MAX_MINERALS_LIFT_ENC_COUNT = 1500;
     double MIN_MINERALS_LIFT_ENC_COUNT = 0;
+
+    //Intake lift
+    static final double MINERALS_LIFT_HOLD_POWER = 0.05;
+    static final double MINERALS_LIFT_STOP_POWER = 0.0;
 
 
 
@@ -384,39 +389,51 @@ public class Y18Tele extends Y18Common
 
 
         //Intake linear slide
-
         if (USE_MINERALS_LIFT) {
             /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
-
-            double vly = gamepad2.left_stick_y;
-            power_minerals_lift = vly;
-
-            /* if(gamepad2.left_stick_y > 0) {
-                power_minerals_lift = MINERALS_LIFT_UP_POWER;
-            } else if (gamepad2.left_stick_y < 0) {
-                power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-            } */
-
 
             ///Intake linear slide encoder count
             double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
 
-            if ( vly>0 && Math.abs(mineral_lift_enc) <= MIN_MINERALS_LIFT_ENC_COUNT) {
-                power_minerals_lift = 0.0;
-            } else if (vly<0 && Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT) {
-                power_minerals_lift = 0.0;
-            }
-            /*
-            if (gamepad2.a) {
-                mineral_lift_enc = MIN_MINERALS_LIFT_ENC_COUNT;
-                motorMineralsLift_.setPosition(mineral_lift_enc);
-            } */
+            ///Setting the power to the y-axis
+            double vly = gamepad2.left_stick_y;
+            power_minerals_lift = vly;
 
+            ///Holding the linear slide in place
+            if (vly == 0.0 ) {
+                power_minerals_lift = MINERALS_LIFT_HOLD_POWER;
+            }
+
+            ///Automated lifting and lowering
+            if (gamepad2.a) {
+                power_minerals_lift = MINERALS_LIFT_UP_POWER;
+            } else if (gamepad2.x) {
+                power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
+            }
+
+            ///Encoder boundaries
+            if ( vly>0 && Math.abs(mineral_lift_enc) <= MIN_MINERALS_LIFT_ENC_COUNT) {
+                power_minerals_lift = MINERALS_LIFT_HOLD_POWER;
+            } else if (vly<0 && Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT) {
+                power_minerals_lift = MINERALS_LIFT_STOP_POWER;
+            }
+
+            ///Setting the range and the power
             power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
             motorMineralsLift_.setPower(power_minerals_lift);
 
         }
 
+        //Extension servo
+        if (USE_SERVO_EXTENSION) {
+            if (gamepad2.right_stick_y == 0) {
+                servo_extension_.setPosition(SERVO_EXTENSION_STOP);
+            } else if (gamepad2.right_stick_y > 0) {
+                servo_extension_.setPosition(EXTENSION_OUT);
+            } else {
+                servo_extension_.setPosition(EXTENSION_IN);
+            }
+        }
 
 
 
