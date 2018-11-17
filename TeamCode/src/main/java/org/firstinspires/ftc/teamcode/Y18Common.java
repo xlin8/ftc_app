@@ -104,11 +104,17 @@ public class Y18Common extends OpMode {
     //controls the linear slide at the front of the robot
     //uses the left joystick y axis for up and down.
 
-    Servo  servo_lift_pin_;                                 // Servo for lift pin
+      Servo  servo_lift_pin_;                                 // Servo for lift pin
     double servo_lift_pin_pos_;                            // Lift pin servo position
     static final double  LIFT_PIN_STOP = CR_SERVO_STOP;
     static final double  LIFT_PIN_PULL = 0.0;
 
+    //intake extension (cont servo)
+    boolean USE_SERVO_EXTENSION = true;
+    Servo servo_extension_;
+    double SERVO_EXTENSION_STOP = CR_SERVO_STOP;
+    static final double EXTENSION_OUT = 1.0;
+    static final double EXTENSION_IN = 0.0;
 
     /// IMU
     static final boolean USE_IMU  = true;           // use IMU sensor to turn
@@ -210,6 +216,10 @@ public class Y18Common extends OpMode {
             ///TODO: Fix stuck init, reset lift position
             servo_lift_pin_ = hardwareMap.servo.get("servo_lift_pin");
             servo_lift_pin_pos_ = LIFT_PIN_STOP ;
+        }
+        if(USE_SERVO_EXTENSION){
+            servo_extension_ = hardwareMap.servo.get("servo_extention_");
+            servo_extension_.setPosition(SERVO_EXTENSION_STOP);
         }
         power_lift_ = 0.0;
 
