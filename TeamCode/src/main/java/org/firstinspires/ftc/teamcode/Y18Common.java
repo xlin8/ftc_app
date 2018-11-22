@@ -117,8 +117,6 @@ public class Y18Common extends OpMode {
     static final double EXTENSION_OUT = 1.0;
     static final double EXTENSION_IN = 0.0;
 
-
-
     /// IMU
     static final boolean USE_IMU  = true;           // use IMU sensor to turn
     BNO055IMU imu_;                         // Adafruit or RevHub IMU
@@ -221,11 +219,10 @@ public class Y18Common extends OpMode {
             servo_lift_pin_pos_ = LIFT_PIN_STOP ;
         }
 
-        if (USE_SERVO_EXTENSION) {
+        if(USE_SERVO_EXTENSION){
             servo_extension_ = hardwareMap.servo.get("servo_extension_");
             servo_extension_.setPosition(SERVO_EXTENSION_STOP);
         }
-
         power_lift_ = 0.0;
 
         if( USE_IMU ) {
