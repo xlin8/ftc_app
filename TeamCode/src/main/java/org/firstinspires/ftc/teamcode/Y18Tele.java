@@ -64,9 +64,10 @@ public class Y18Tele extends Y18Common
     double MINERALS_LIFT_DOWN_POWER = -0.75;
     double MAX_MINERALS_LIFT_ENC_COUNT = 1500;
     double MIN_MINERALS_LIFT_ENC_COUNT = 0;
-    //static final double MINERALS_LIFT_HOLD_POWER = 0.05; //todo : test and find out what this value needs to be.
-    double MINERALS_LIFT_UP_POS = 1400;  //check and make sure this is less than 1500
-    double MINERALS_LIFT_DOWN_POS = 400; //todo : make sure this is the most popular and desired position!!
+    double MINERALS_LIFT_UP_POS = 1150;  //check and make sure this is less than 1500 and THAT IT IS POSITIvE EVEN IF ITS REALLY NEGATIVE!!!!
+    double MINERALS_LIFT_DOWN_POS = 300; //todo : make sure this is the most popular and desired position!!
+    double MINERALS_LIFT_UP_HOLD_POWER = 0.05;  //todo : test and find out what this value needs to be.
+
     ///  Constructor
     public Y18Tele() {
     }
@@ -338,11 +339,7 @@ public class Y18Tele extends Y18Common
         if( gamepad1.a ) servo_lift_pin_pos_ = LIFT_PIN_PULL;
         servo_lift_pin_.setPosition( servo_lift_pin_pos_ );
 
-
-
-
         ///intake servo
-
         if (USE_INTAKE_SERVOS) {
 
             if (y2_cnt_ % 3 == 1) {
@@ -358,9 +355,7 @@ public class Y18Tele extends Y18Common
 
         }
 
-
         //Dumping
-
         if (USE_SERVO_DUMP) {
             if (b2_cnt_ % 2 == 1) {                     //if b is pressed once, go down
                 servo_dump_.setPosition(DUMP_DOWN);
@@ -368,8 +363,6 @@ public class Y18Tele extends Y18Common
                 servo_dump_.setPosition(DUMP_UP);
             }
         }
-
-
 
         //Winch
         if (USE_INTAKE_WINCH) {
@@ -385,12 +378,15 @@ public class Y18Tele extends Y18Common
         //Intake linear slide
 
         if (USE_MINERALS_LIFT) {
-            /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
+          /*  /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
+
+            boolean flagA = false;
+            boolean flagX = false;
+            boolean flagLeftJoystickY = false;
 
             double vly = gamepad2.left_stick_y;
-            power_minerals_lift = vly;
 
-            ///Intake linear slide encoder count
+            ///Minerals linear slide encoder count
             double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
 
             if ( vly>0 && Math.abs(mineral_lift_enc) <= MIN_MINERALS_LIFT_ENC_COUNT) {
@@ -400,32 +396,115 @@ public class Y18Tele extends Y18Common
                 power_minerals_lift = 0.0;
                 // power_minerals_lift = MINERALS_LIFT_HOLD_POWER;
             }
-
-           /* if (vly == 0){
-                power_minerals_lift = MINERALS_LIFT_HOLD_POWER;
-            }*/
-
-            if (gamepad2.x){         //up
-                if (Math.abs(mineral_lift_enc) > MINERALS_LIFT_UP_POS) {
+            if (gamepad2.left_stick_y != 0){
+                flagA = false;
+                flagX = false;
+                flagLeftJoystickY = true;
+            }
+            if (flagLeftJoystickY) {
+                power_minerals_lift = vly;
+            }
+            if(gamepad2.x){
+                flagA = false;
+                flagX = true;
+                flagLeftJoystickY = false;
+            }
+            if (flagX){         //up
+                if (Math.abs (mineral_lift_enc) > MINERALS_LIFT_UP_POS - 50 && Math.abs (mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
+                    power_minerals_lift = 0.025;
+                } else if (Math.abs (mineral_lift_enc) < MINERALS_LIFT_UP_POS + 50 && Math.abs (mineral_lift_enc) > MINERALS_LIFT_UP_POS) {
+                    power_minerals_lift = 0.0;   //not negative because it will droop anyways
+                } else if (Math.abs(mineral_lift_enc) > MINERALS_LIFT_UP_POS) {
+                    //motorMineralsLift_.setTargetPosition(MINERALS_LIFT_UP_POS);
                     power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                }
-                else if (Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
+                } else if (Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
                     power_minerals_lift = MINERALS_LIFT_UP_POWER;
                 }
             }
-            else if (gamepad2.a){    //down
-                if (Math.abs(mineral_lift_enc) > MINERALS_LIFT_DOWN_POS) {
+            if (gamepad2.a){
+                flagA = true;
+                flagX = false;
+                flagLeftJoystickY = false;
+            }
+            if (flagA){    //down
+                if (Math.abs (mineral_lift_enc) > MINERALS_LIFT_DOWN_POS - 50 && Math.abs (mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
+                    power_minerals_lift = 0.025;
+                } else if (Math.abs (mineral_lift_enc) < MINERALS_LIFT_DOWN_POS + 50 && Math.abs (mineral_lift_enc) > MINERALS_LIFT_DOWN_POS) {
+                    power_minerals_lift = 0.0;   //not negative because it will droop anyways
+                } else if (Math.abs(mineral_lift_enc) > MINERALS_LIFT_DOWN_POS) {
                     power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                }
-                else if (Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
+                } else if (Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
                     power_minerals_lift = MINERALS_LIFT_UP_POWER;
                 }
+            }
+            telemetry.addData("Minerals Lift EncPos", ": "+String.valueOf(motorMineralsLift_.getCurrentPosition())+", Power="+String.valueOf(motorMineralsLift_.getPower()));
+            power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
+            motorMineralsLift_.setPower(power_minerals_lift);
+        */
+
+            /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
+
+            /*
+            Psuedo Code : if math.abs of gamepad 2 . left stick y is more than 0.1 (ex.), then go to manual (set the flag), do similar for the button control (a || x)
+             */
+            boolean flagManual = false;
+            boolean flagButtons = false;
+
+            double vly = gamepad2.left_stick_y;
+            double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
+            power_minerals_lift = 0.0;
+
+            if(Math.abs( gamepad2.left_stick_y) > 0.1) {
+                flagManual = true;
+                flagButtons = false;
+            } else if(x2_cnt_ % 2 == 1 || a2_cnt_ % 2 == 1 ) {
+                flagManual = false;
+                flagButtons = true;
+            }
+
+            if (flagManual){
+                power_minerals_lift = -vly;   // todo negative
+                a2_cnt_ = 0;
+                x2_cnt_ = 0;
+            } else if (flagButtons){
+                if (x2_cnt_ % 2 == 1) {         //up
+                    a2_cnt_ = 0;
+                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS - 50) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
+                        power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS + 50) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_UP_POS) {
+                        power_minerals_lift = 0.0;   //not negative because it will droop anyways
+                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS + 50)) {
+                        power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS - 50)) {
+                        power_minerals_lift = MINERALS_LIFT_UP_POWER;
+                    }
+                } else if (a2_cnt_ % 2 == 1) {        //down
+                    x2_cnt_ = 0;
+                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS - 50) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
+                        power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS + 50) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_DOWN_POS) {
+                        power_minerals_lift = 0.0;   //not negative because it will droop anyways
+                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS + 50)) {
+                        power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS - 50)) {
+                        power_minerals_lift = MINERALS_LIFT_UP_POWER;
+                    }
+                }
+            }
+
+            telemetry.addData("Minerals Lift EncPos", ": "+String.valueOf(motorMineralsLift_.getCurrentPosition())+", Power="+String.valueOf(motorMineralsLift_.getPower()));
+            if ( Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT && power_minerals_lift  > 0 ) {
+                power_minerals_lift = 0.0;
+            } else if ( mineral_lift_enc <= MIN_MINERALS_LIFT_ENC_COUNT && power_minerals_lift  < 0 ) {
+                power_minerals_lift = 0.0;
             }
             power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
             motorMineralsLift_.setPower(power_minerals_lift);
+
+
         }
 
-        //extension servo
+        //extension linear slide servo
         if (USE_SERVO_EXTENSION){
             if(gamepad2.right_stick_y == 0){
                 servo_extension_.setPosition(SERVO_EXTENSION_STOP);
@@ -450,16 +529,6 @@ public class Y18Tele extends Y18Common
             if( show_wheel_power )  telemetry.addData("WheelPower", "Factor="+String.format("%.2f",drive_power_f)+"LF/RF/LB/RB: " + String.format("%.2f", motorLF_.getPower()) + "/" + String.format("%.2f", motorRF_.getPower()) + "/" + String.format("%.2f", motorLB_.getPower()) + "/" + String.format("%.2f", motorRB_.getPower()));
 
             if( DEBUG_DRIVE_MOTORS ) {
-                telemetry.addData("RightPowerRatio", String.format("%.2f", RIGHT_POWER_RATIO));
-                telemetry.addData("EncPos", ": LF="+String.valueOf(motorLF_.getCurrentPosition())+", RF="+String.valueOf(motorRF_.getCurrentPosition())+", LB="+String.valueOf(motorLB_.getCurrentPosition())+",RB="+String.valueOf(motorRB_.getCurrentPosition()));
-            }
-            if( show_heading && imu_!=null ) {
-                telemetry.addData("IMU", "heading: " + String.format("%.2f", getHeading()));
-            }
-            if( show_voltage ) {
-                telemetry.addData("Battery", String.format("#sensors: %d, voltage: %.2fV", numVoltageSensors(), getBatteryVoltage(true)));
-            }
-            if( USE_LIFT && USE_ENCODER_FOR_TELEOP && show_lift_pos ) {
                 telemetry.addData("Lift EncPose", ": "+String.valueOf(motorLift_.getCurrentPosition())+", Power="+String.valueOf(motorLift_.getPower()));
                 telemetry.addData("Mineral Lift EncPose", ": "+String.valueOf(motorMineralsLift_.getCurrentPosition())+", Power="+String.valueOf(motorMineralsLift_.getPower()));
             }

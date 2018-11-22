@@ -214,11 +214,11 @@ public class Y18Common extends OpMode {
             motorLift_ = hardwareMap.dcMotor.get("motor6");
             motorLift_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             ///TODO: Fix stuck init, reset lift position
-            servo_lift_pin_ = hardwareMap.servo.get("servo_lift_pin");
+            servo_lift_pin_ = hardwareMap.servo.get("servo_lift_pin_");
             servo_lift_pin_pos_ = LIFT_PIN_STOP ;
         }
         if(USE_SERVO_EXTENSION){
-            servo_extension_ = hardwareMap.servo.get("servo_extention_");
+            servo_extension_ = hardwareMap.servo.get("servo_extension_");
             servo_extension_.setPosition(SERVO_EXTENSION_STOP);
         }
         power_lift_ = 0.0;
