@@ -94,8 +94,9 @@ public class Y18Common extends OpMode {
     double WINCH_DOWN_POWER = 1;
     double WINCH_POWER_BRAKE = 0.0;
     double power_motor_winch = 0.0;
-    static final double WINCH_DOWN_ENC_CNT = 823;
+    static final double WINCH_MANUAL_DOWN_ENC_CNT = 815;
     static final double WINCH_UP_ENC_CNT = 0;
+    static final double WINCH_AUTO_DOWN_ENC_CNT = 1000;
 
     ///Team marker servo
     boolean USE_SERVO_MARKER = true;

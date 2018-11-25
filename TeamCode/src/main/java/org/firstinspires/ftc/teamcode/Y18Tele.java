@@ -75,6 +75,11 @@ public class Y18Tele extends Y18Common
     double MINERALS_LIFT_UP_HOLD_POWER = 0.05;
     double MINERALS_DUMP_RANGE = 50;
 
+    boolean mineral_lift_auto_up_flag_ = false;
+    boolean mineral_lift_auto_down_flag_ = false;
+    int a2_prev_cnt_ = 0;
+    int x2_prev_cnt_ = 0;
+
     ///  Constructor
     public Y18Tele() {
     }
@@ -378,173 +383,96 @@ public class Y18Tele extends Y18Common
             }
         }
 
-        //Winch
-        if (USE_INTAKE_WINCH) {
-            motor_winch_enc = motorWinch_.getCurrentPosition();
 
-            power_motor_winch = WINCH_POWER_BRAKE;
-
-            if (gamepad2.left_bumper) {
-                if (Math.abs(motor_winch_enc) > WINCH_UP_ENC_CNT) {
-                    power_motor_winch = WINCH_UP_POWER;
-                }
-            } else if (gamepad2.right_bumper) {
-                if (Math.abs(motor_winch_enc) < WINCH_DOWN_ENC_CNT) {
-                    power_motor_winch = WINCH_DOWN_POWER;
-                }
-            }
-
-            power_motor_winch = Range.clip(power_motor_winch, -1, 1);
-            motorWinch_.setPower(power_motor_winch);
-
-            telemetry.addData("Intake Winch EncPos", ": " + String.valueOf(motorWinch_.getCurrentPosition()) + ", Power=" + String.valueOf(motorWinch_.getPower()));
-
-        }
-
-        //Intake linear slide
+        //Intake linear slide & winch
         if (USE_MINERALS_LIFT) {
-          /*  /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
-
-            boolean flagA = false;
-            boolean flagX = false;
-            boolean flagLeftJoystickY = false;
-
-            double vly = gamepad2.left_stick_y;
-
-            ///Minerals linear slide encoder count
-            double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
-
-            ///Encoder boundaries
-            if ( vly>0 && Math.abs(mineral_lift_enc) <= MIN_MINERALS_LIFT_ENC_COUNT) {
-                power_minerals_lift = 0.0;
-               // power_minerals_lift = MINERALS_LIFT_HOLD_POWER;
-            } else if (vly < 0 && Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT) {
-                power_minerals_lift = 0.0;
-                // power_minerals_lift = MINERALS_LIFT_HOLD_POWER;
-            }
-            if (gamepad2.left_stick_y != 0){
-                flagA = false;
-                flagX = false;
-                flagLeftJoystickY = true;
-            }
-            if (flagLeftJoystickY) {
-                power_minerals_lift = vly;
-            }
-            if(gamepad2.x){
-                flagA = false;
-                flagX = true;
-                flagLeftJoystickY = false;
-            }
-            if (flagX){         //up
-                if (Math.abs (mineral_lift_enc) > MINERALS_LIFT_UP_POS - 50 && Math.abs (mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
-                    power_minerals_lift = 0.025;
-                } else if (Math.abs (mineral_lift_enc) < MINERALS_LIFT_UP_POS + 50 && Math.abs (mineral_lift_enc) > MINERALS_LIFT_UP_POS) {
-                    power_minerals_lift = 0.0;   //not negative because it will droop anyways
-                } else if (Math.abs(mineral_lift_enc) > MINERALS_LIFT_UP_POS) {
-                    //motorMineralsLift_.setTargetPosition(MINERALS_LIFT_UP_POS);
-                    power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                } else if (Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
-                    power_minerals_lift = MINERALS_LIFT_UP_POWER;
-                }
-            }
-            if (gamepad2.a){
-                flagA = true;
-                flagX = false;
-                flagLeftJoystickY = false;
-            }
-            if (flagA){    //down
-                if (Math.abs (mineral_lift_enc) > MINERALS_LIFT_DOWN_POS - 50 && Math.abs (mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
-                    power_minerals_lift = 0.025;
-                } else if (Math.abs (mineral_lift_enc) < MINERALS_LIFT_DOWN_POS + 50 && Math.abs (mineral_lift_enc) > MINERALS_LIFT_DOWN_POS) {
-                    power_minerals_lift = 0.0;   //not negative because it will droop anyways
-                } else if (Math.abs(mineral_lift_enc) > MINERALS_LIFT_DOWN_POS) {
-                    power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                } else if (Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
-                    power_minerals_lift = MINERALS_LIFT_UP_POWER;
-                }
-            }
-            telemetry.addData("Minerals Lift EncPos", ": "+String.valueOf(motorMineralsLift_.getCurrentPosition())+", Power="+String.valueOf(motorMineralsLift_.getPower()));
-            power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
-            motorMineralsLift_.setPower(power_minerals_lift);
-        */
-
-            /// TODO: Set to a specific max or min. encoder count, if goes below, give small power to hold (getCurrentPosition), somehow combine with vly code? Maybe if vly = 1 or -1, go up by a specific encoder amount, combine with time. See motorLift_ code for example.
-
             /*
             Psuedo Code : if math.abs of gamepad 2 . left stick y is more than 0.1 (ex.), then go to manual (set the flag), do similar for the button control (a || x)
              */
-            boolean flagManual = false;
-            boolean flagButtons = false;
+            boolean manual_flag = false;
 
             double vly = gamepad2.left_stick_y;
             double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
             power_minerals_lift = 0.0;
 
-            if (Math.abs(gamepad2.left_stick_y) > 0.1) {
-                flagManual = true;
-                flagButtons = false;
-            } else if (x2_cnt_ % 2 == 1 || a2_cnt_ % 2 == 1) {
-                flagManual = false;
-                flagButtons = true;
+            if (Math.abs(gamepad2.left_stick_y) > 0.1 || gamepad2.left_bumper || gamepad2.right_bumper) {
+                manual_flag = true;
+                mineral_lift_auto_up_flag_ = false;
+                mineral_lift_auto_down_flag_ = false;
+            } else {
+                if (x2_cnt_ != x2_prev_cnt_) {
+                    mineral_lift_auto_up_flag_ = true;
+                    mineral_lift_auto_down_flag_ = false;
+                } else if (a2_cnt_ != a2_prev_cnt_) {
+                    mineral_lift_auto_up_flag_ = false;
+                    mineral_lift_auto_down_flag_ = true;
+                }
             }
 
-            if (flagManual) {
+            x2_prev_cnt_ = x2_cnt_;
+            a2_prev_cnt_ = a2_cnt_;
+
+            power_motor_winch = WINCH_POWER_BRAKE;
+            motor_winch_enc = motorWinch_.getCurrentPosition();
+
+            if (manual_flag) {
                 power_minerals_lift = -vly;   // todo negative
-                a2_cnt_ = 0;
-                x2_cnt_ = 0;
-            } else if (flagButtons) {
 
-                if (x2_cnt_ % 2 == 1) {         //up
-                    a2_cnt_ = 0;
 
-                    power_motor_winch = WINCH_UP_POWER;
-
-                    if (Math.abs(motor_winch_enc) >= WINCH_UP_ENC_CNT && gamepad2.left_bumper == false && gamepad2.right_bumper == false) {
-                        power_motor_winch = WINCH_POWER_BRAKE;
+                if (gamepad2.left_bumper) {
+                    if (motor_winch_enc > WINCH_UP_ENC_CNT) {
+                        power_motor_winch = WINCH_UP_POWER;
                     }
-
-                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
-                        power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS + MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_UP_POS) {
-                        power_minerals_lift = 0.0;   //not negative because it will droop anyways
-                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS + MINERALS_DUMP_RANGE)) {
-                        power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE)) {
-                        power_minerals_lift = MINERALS_LIFT_UP_POWER;
-                    }
-
-                } else if (a2_cnt_ % 2 == 1) { //down
-
-                    x2_cnt_ = 0;
-
-                    power_motor_winch = WINCH_DOWN_POWER;
-
-                    if (Math.abs(motor_winch_enc) <= WINCH_DOWN_ENC_CNT && gamepad2.left_bumper == false && gamepad2.right_bumper == false) {
-                        power_motor_winch = WINCH_POWER_BRAKE;
-                    }
-
-                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
-                        power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS + MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_DOWN_POS) {
-                        power_minerals_lift = 0.0;   //not negative because it will droop anyways
-                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS + MINERALS_DUMP_RANGE)) {
-                        power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE)) {
-                        power_minerals_lift = MINERALS_LIFT_UP_POWER;
+                } else if (gamepad2.right_bumper) {
+                    if (motor_winch_enc < WINCH_MANUAL_DOWN_ENC_CNT) {
+                        power_motor_winch = WINCH_DOWN_POWER;
                     }
                 }
+            } else if (mineral_lift_auto_up_flag_) {         //up
+                if (motor_winch_enc > (WINCH_UP_ENC_CNT+200)) {
+                    power_motor_winch = WINCH_UP_POWER;
+                }
 
+                if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
+                    power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
+                } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS + MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_UP_POS) {
+                    power_minerals_lift = 0.0;   //not negative because it will droop anyways
+                } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS + MINERALS_DUMP_RANGE)) {
+                    power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
+                } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE)) {
+                    power_minerals_lift = MINERALS_LIFT_UP_POWER;
+                }
+            } else if (mineral_lift_auto_down_flag_) {     //down
+                if (motor_winch_enc < WINCH_AUTO_DOWN_ENC_CNT) {
+                    power_motor_winch = WINCH_DOWN_POWER;
+                }
+
+                if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
+                    power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
+                } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS + MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_DOWN_POS) {
+                    power_minerals_lift = 0.0;   //not negative because it will droop anyways
+                } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS + MINERALS_DUMP_RANGE)) {
+                    power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
+                } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE)) {
+                    power_minerals_lift = MINERALS_LIFT_UP_POWER;
+                }
             }
 
             telemetry.addData("Minerals Lift EncPos", ": " + String.valueOf(motorMineralsLift_.getCurrentPosition()) + ", Power=" + String.valueOf(motorMineralsLift_.getPower()));
+            telemetry.addData("Intake Winch EncPos", ": " + String.valueOf(motorWinch_.getCurrentPosition()) + ", Power=" + String.valueOf(motorWinch_.getPower()));
+
+            power_motor_winch = Range.clip(power_motor_winch, -1, 1);
+            motorWinch_.setPower(power_motor_winch);
 
             if (Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT && power_minerals_lift > 0) {
                 power_minerals_lift = 0.0;
             } else if (mineral_lift_enc <= MIN_MINERALS_LIFT_ENC_COUNT && power_minerals_lift < 0) {
                 power_minerals_lift = 0.0;
             }
+
             power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
             motorMineralsLift_.setPower(power_minerals_lift);
+
         }
 
         //extension linear slide servo
