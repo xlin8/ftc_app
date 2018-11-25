@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
@@ -60,15 +61,19 @@ public class Y18Tele extends Y18Common
     //Intake servo variables (continuous servo)
     double INTAKE_POWER_IN = 1;
     double INTAKE_POWER_OUT = 0;
+
+    //Winch
+    double motor_winch_enc = 0.0;
+
     //DCmotor - lift for the linear slide at the front, called motorMineralsLift_
     double MINERALS_LIFT_UP_POWER = 0.75;
     double MINERALS_LIFT_DOWN_POWER = -0.75;
-    double MAX_MINERALS_LIFT_ENC_COUNT = 1500;
-    double MIN_MINERALS_LIFT_ENC_COUNT = 0;
-
-    double MINERALS_LIFT_UP_POS = 1150;  //check and make sure this is less than 1500 and THAT IT IS POSITIvE EVEN IF ITS REALLY NEGATIVE!!!!
-    double MINERALS_LIFT_DOWN_POS = 300; //todo : make sure this is the most popular and desired position!!
-    double MINERALS_LIFT_UP_HOLD_POWER = 0.05;  //todo : test and find out what this value needs to be.
+    static final double MAX_MINERALS_LIFT_ENC_COUNT = 1500;
+    static final double MIN_MINERALS_LIFT_ENC_COUNT = 0;
+    double MINERALS_LIFT_UP_POS = 1150;
+    double MINERALS_LIFT_DOWN_POS = 300;
+    double MINERALS_LIFT_UP_HOLD_POWER = 0.05;
+    double MINERALS_DUMP_RANGE = 50;
 
     ///  Constructor
     public Y18Tele() {
@@ -102,6 +107,10 @@ public class Y18Tele extends Y18Common
             motorMineralsLift_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
+        if (USE_INTAKE_WINCH) {
+            motorWinch_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
 
     }
 
@@ -116,8 +125,13 @@ public class Y18Tele extends Y18Common
 
             if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
         }
+
         if(USE_MINERALS_LIFT){
             motorMineralsLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        if (USE_INTAKE_WINCH) {
+            motorWinch_.setMode (DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 
@@ -125,10 +139,9 @@ public class Y18Tele extends Y18Common
         curr_time_ = timer_.time();
         servo_lift_pin_pos_ = LIFT_PIN_STOP;
 
-        if(USE_LOW_SEN_DRIVE) {
-            low_sen_drive_ = (rsb1_cnt_%2)==1;
+        if (USE_LOW_SEN_DRIVE) {
+            low_sen_drive_ = (rsb1_cnt_ % 2) == 1;
         }
-
 
 
         power_lift_ = 0.0;
@@ -144,14 +157,14 @@ public class Y18Tele extends Y18Common
         rsy = -gamepad1.right_stick_y;
         rsx = gamepad1.right_stick_x;
 
-        if( (curr_time_-last_button_time_) > MIN_BUTTON_INTERVAL) {
-            if (gamepad1.x){
+        if ((curr_time_ - last_button_time_) > MIN_BUTTON_INTERVAL) {
+            if (gamepad1.x) {
                 x1_cnt_++;
                 last_button_time_ = curr_time_;
             } else if (gamepad1.y) {
                 y1_cnt_++;
                 last_button_time_ = curr_time_;
-            }else if (gamepad1.a) {
+            } else if (gamepad1.a) {
                 a1_cnt_++;
                 last_button_time_ = curr_time_;
             } else if (gamepad1.b) {
@@ -171,14 +184,14 @@ public class Y18Tele extends Y18Common
                 last_button_time_ = curr_time_;
             }
         }
-        if( (curr_time_-last_button_time2_) > MIN_BUTTON_INTERVAL) {
-            if (gamepad2.x){
+        if ((curr_time_ - last_button_time2_) > MIN_BUTTON_INTERVAL) {
+            if (gamepad2.x) {
                 x2_cnt_++;
                 last_button_time2_ = curr_time_;
             } else if (gamepad2.y) {
                 y2_cnt_++;
                 last_button_time2_ = curr_time_;
-            }else if (gamepad2.a) {
+            } else if (gamepad2.a) {
                 a2_cnt_++;
                 last_button_time2_ = curr_time_;
             } else if (gamepad2.b) {
@@ -200,7 +213,7 @@ public class Y18Tele extends Y18Common
         }
 
 
-        if( Math.abs(rsx) > 0.1 ) {
+        if (Math.abs(rsx) > 0.1) {
             /// Rotate/spin the robot
 
             // Use right_stick_x to rotate the robot; left => turn left(CCW), right => turn right(CW)
@@ -235,10 +248,10 @@ public class Y18Tele extends Y18Common
             power_lf = Range.clip(power_lf, -1, 1);
 
             // scale the joystick value to make it easier to control the robot more precisely at slower speeds.
-            power_rf = (double) scaleDrivePower(power_rf,drive_power_f);
-            power_lf = (double) scaleDrivePower(power_lf,drive_power_f);
+            power_rf = (double) scaleDrivePower(power_rf, drive_power_f);
+            power_lf = (double) scaleDrivePower(power_lf, drive_power_f);
 
-            if( USE_LOW_SEN_DRIVE && low_sen_drive_ ) {
+            if (USE_LOW_SEN_DRIVE && low_sen_drive_) {
                 power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,/*drive_power_f*/1.0);
                 power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,/*drive_power_f*/1.0);
             }
@@ -252,34 +265,34 @@ public class Y18Tele extends Y18Common
 
         }
 
-        if( DEBUG_DRIVE_MOTORS ) {
+        if (DEBUG_DRIVE_MOTORS) {
             boolean test_drive = false;
-            if( gamepad1.left_bumper ) {
+            if (gamepad1.left_bumper) {
                 power_lf = 1.0;
                 test_drive = true;
-            } else if( gamepad1.right_bumper ) {
+            } else if (gamepad1.right_bumper) {
                 power_lf = -1.0;
                 test_drive = true;
-            } else if( Math.abs(gamepad1.left_trigger)>0.1 ) {
+            } else if (Math.abs(gamepad1.left_trigger) > 0.1) {
                 power_lf = gamepad1.left_trigger;
                 test_drive = true;
-            } else if( Math.abs(gamepad1.right_trigger)>0.1 ) {
+            } else if (Math.abs(gamepad1.right_trigger) > 0.1) {
                 power_lf = -gamepad1.right_trigger;
                 test_drive = true;
             }
-            if( test_drive ) {
+            if (test_drive) {
                 power_lf = Range.clip(power_lf, -1, 1);
                 power_lb = power_lf;
-                power_rf = power_rb = -power_lf*RIGHT_POWER_RATIO;
+                power_rf = power_rb = -power_lf * RIGHT_POWER_RATIO;
             }
         }
 
         /// Use Mecanum wheels by right joystick
         boolean drive_sidewalk = false;
-        if( USE_MECANUM_WHEELS && Math.abs(rsx) > JOYSTICK_DEAD_ZONE ) {
+        if (USE_MECANUM_WHEELS && Math.abs(rsx) > JOYSTICK_DEAD_ZONE) {
             lsx = gamepad1.right_stick_x;    // direction; lsx>0, turn right <=> RF<LF, left wheels turn faster
             lsy = -gamepad1.right_stick_y;   // throttle
-            if( USE_MECANUM_FOR_SIDEWALK_ONLY ) lsy = 0;
+            if (USE_MECANUM_FOR_SIDEWALK_ONLY) lsy = 0;
             drive_sidewalk = true;
 
             power_lf = lsy + lsx;
@@ -307,7 +320,7 @@ public class Y18Tele extends Y18Common
 
         /// Flip robot if needed
         boolean flip_robot = false;  // grabber facing forward
-        if( flip_robot ) {
+        if (flip_robot) {
             double p = power_lf;
             power_lf = power_rf;
             power_rf = p;
@@ -327,29 +340,28 @@ public class Y18Tele extends Y18Common
         motorLB_.setPower(power_lb);
 
 
-
         /// Use digital pad to control lift
         boolean manual_claw_control = false;
-        if( gamepad1.dpad_up || gamepad2.dpad_up ) { // raise lift
+        if (gamepad1.dpad_up || gamepad2.dpad_up) { // raise lift
             power_lift_ = LIFT_UP_POWER;
-        } else if( gamepad1.dpad_down || gamepad2.dpad_down) {  // lower lift
+        } else if (gamepad1.dpad_down || gamepad2.dpad_down) {  // lower lift
             power_lift_ = LIFT_DOWN_POWER;
         }
         motorLift_.setPower(power_lift_);
 
         /// Test
-        if( gamepad1.a ) servo_lift_pin_pos_ = LIFT_PIN_PULL;
-        servo_lift_pin_.setPosition( servo_lift_pin_pos_ );
+        if (gamepad1.a) servo_lift_pin_pos_ = LIFT_PIN_PULL;
+        servo_lift_pin_.setPosition(servo_lift_pin_pos_);
 
         ///intake servo
         if (USE_INTAKE_SERVOS) {
 
             if (y2_cnt_ % 3 == 1) {
                 servo_intake_l_.setPosition(INTAKE_POWER_IN);
-                servo_intake_r_.setPosition(1-INTAKE_POWER_IN);
+                servo_intake_r_.setPosition(1 - INTAKE_POWER_IN);
             } else if (y2_cnt_ % 3 == 2) {
                 servo_intake_l_.setPosition(INTAKE_POWER_OUT);
-                servo_intake_r_.setPosition(1-INTAKE_POWER_OUT);
+                servo_intake_r_.setPosition(1 - INTAKE_POWER_OUT);
             } else if (y2_cnt_ % 3 == 0) {
                 servo_intake_l_.setPosition(INTAKE_POWER_BRAKE);
                 servo_intake_r_.setPosition(INTAKE_POWER_BRAKE);
@@ -368,13 +380,25 @@ public class Y18Tele extends Y18Common
 
         //Winch
         if (USE_INTAKE_WINCH) {
+            motor_winch_enc = motorWinch_.getCurrentPosition();
+
+            power_motor_winch = WINCH_POWER_BRAKE;
+
             if (gamepad2.left_bumper) {
-                servo_winch_.setPosition(WINCH_UP_POWER);
+                if (Math.abs(motor_winch_enc) > WINCH_UP_ENC_CNT) {
+                    power_motor_winch = WINCH_UP_POWER;
+                }
             } else if (gamepad2.right_bumper) {
-                servo_winch_.setPosition(WINCH_DOWN_POWER);
-            } else {
-                servo_winch_.setPosition(WINCH_POWER_BRAKE);
+                if (Math.abs(motor_winch_enc) < WINCH_DOWN_ENC_CNT) {
+                    power_motor_winch = WINCH_DOWN_POWER;
+                }
             }
+
+            power_motor_winch = Range.clip(power_motor_winch, -1, 1);
+            motorWinch_.setPower(power_motor_winch);
+
+            telemetry.addData("Intake Winch EncPos", ": " + String.valueOf(motorWinch_.getCurrentPosition()) + ", Power=" + String.valueOf(motorWinch_.getPower()));
+
         }
 
         //Intake linear slide
@@ -456,54 +480,71 @@ public class Y18Tele extends Y18Common
             double mineral_lift_enc = motorMineralsLift_.getCurrentPosition();
             power_minerals_lift = 0.0;
 
-            if(Math.abs( gamepad2.left_stick_y) > 0.1) {
+            if (Math.abs(gamepad2.left_stick_y) > 0.1) {
                 flagManual = true;
                 flagButtons = false;
-            } else if(x2_cnt_ % 2 == 1 || a2_cnt_ % 2 == 1 ) {
+            } else if (x2_cnt_ % 2 == 1 || a2_cnt_ % 2 == 1) {
                 flagManual = false;
                 flagButtons = true;
             }
 
-            if (flagManual){
+            if (flagManual) {
                 power_minerals_lift = -vly;   // todo negative
                 a2_cnt_ = 0;
                 x2_cnt_ = 0;
-            } else if (flagButtons){
+            } else if (flagButtons) {
+
                 if (x2_cnt_ % 2 == 1) {         //up
                     a2_cnt_ = 0;
-                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS - 50) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
+
+                    power_motor_winch = WINCH_UP_POWER;
+
+                    if (Math.abs(motor_winch_enc) >= WINCH_UP_ENC_CNT && gamepad2.left_bumper == false && gamepad2.right_bumper == false) {
+                        power_motor_winch = WINCH_POWER_BRAKE;
+                    }
+
+                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
                         power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS + 50) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_UP_POS) {
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS + MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_UP_POS) {
                         power_minerals_lift = 0.0;   //not negative because it will droop anyways
-                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS + 50)) {
+                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS + MINERALS_DUMP_RANGE)) {
                         power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS - 50)) {
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE)) {
                         power_minerals_lift = MINERALS_LIFT_UP_POWER;
                     }
-                } else if (a2_cnt_ % 2 == 1) {        //down
+
+                } else if (a2_cnt_ % 2 == 1) { //down
+
                     x2_cnt_ = 0;
-                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS - 50) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
+
+                    power_motor_winch = WINCH_DOWN_POWER;
+
+                    if (Math.abs(motor_winch_enc) <= WINCH_DOWN_ENC_CNT && gamepad2.left_bumper == false && gamepad2.right_bumper == false) {
+                        power_motor_winch = WINCH_POWER_BRAKE;
+                    }
+
+                    if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
                         power_minerals_lift = MINERALS_LIFT_UP_HOLD_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS + 50) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_DOWN_POS) {
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS + MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) >= MINERALS_LIFT_DOWN_POS) {
                         power_minerals_lift = 0.0;   //not negative because it will droop anyways
-                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS + 50)) {
+                    } else if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS + MINERALS_DUMP_RANGE)) {
                         power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
-                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS - 50)) {
+                    } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE)) {
                         power_minerals_lift = MINERALS_LIFT_UP_POWER;
                     }
                 }
+
             }
 
-            telemetry.addData("Minerals Lift EncPos", ": "+String.valueOf(motorMineralsLift_.getCurrentPosition())+", Power="+String.valueOf(motorMineralsLift_.getPower()));
-            if ( Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT && power_minerals_lift  > 0 ) {
+            telemetry.addData("Minerals Lift EncPos", ": " + String.valueOf(motorMineralsLift_.getCurrentPosition()) + ", Power=" + String.valueOf(motorMineralsLift_.getPower()));
+
+            if (Math.abs(mineral_lift_enc) >= MAX_MINERALS_LIFT_ENC_COUNT && power_minerals_lift > 0) {
                 power_minerals_lift = 0.0;
-            } else if ( mineral_lift_enc <= MIN_MINERALS_LIFT_ENC_COUNT && power_minerals_lift  < 0 ) {
+            } else if (mineral_lift_enc <= MIN_MINERALS_LIFT_ENC_COUNT && power_minerals_lift < 0) {
                 power_minerals_lift = 0.0;
             }
             power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
             motorMineralsLift_.setPower(power_minerals_lift);
-
-
         }
 
         //extension linear slide servo

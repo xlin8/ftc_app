@@ -82,13 +82,20 @@ public class Y18Common extends OpMode {
     //180, controlled by b button
 
 
-    ///Servo for the intake system winch
-    boolean USE_INTAKE_WINCH = true;
+    ///Servo for the intake system winch (not used now)
     Servo servo_winch_;
-    double WINCH_POWER_BRAKE = CR_SERVO_STOP;
-    //cont. servo, controlled by right (down) and left(up) bumpers
-    double WINCH_UP_POWER = 1;
-    double WINCH_DOWN_POWER = 0;
+
+
+    ///Motor for intake system winch
+    //Controlled by right (down) and left(up) bumpers
+    DcMotor motorWinch_;
+    boolean USE_INTAKE_WINCH = true;
+    double WINCH_UP_POWER = -1;
+    double WINCH_DOWN_POWER = 1;
+    double WINCH_POWER_BRAKE = 0.0;
+    double power_motor_winch = 0.0;
+    static final double WINCH_DOWN_ENC_CNT = 823;
+    static final double WINCH_UP_ENC_CNT = 0;
 
     ///Team marker servo
     boolean USE_SERVO_MARKER = true;
@@ -189,16 +196,16 @@ public class Y18Common extends OpMode {
             motorMineralsLift_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
+        if (USE_INTAKE_WINCH) {
+            motorWinch_ = hardwareMap.dcMotor.get("motorWinch_");
+            motorWinch_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+
         if(USE_INTAKE_SERVOS) {
             servo_intake_l_ = hardwareMap.servo.get("servo_intake_l_");
             servo_intake_r_ = hardwareMap.servo.get("servo_intake_r_");
             servo_intake_l_.setPosition(INTAKE_POWER_BRAKE);
             servo_intake_r_.setPosition(INTAKE_POWER_BRAKE);
-        }
-
-        if(USE_INTAKE_WINCH) {
-            servo_winch_ = hardwareMap.servo.get("servo_winch_");
-            servo_winch_.setPosition(WINCH_POWER_BRAKE);
         }
 
         if(USE_SERVO_DUMP) {
