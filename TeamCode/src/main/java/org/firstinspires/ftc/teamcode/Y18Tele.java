@@ -361,13 +361,13 @@ public class Y18Tele extends Y18Common
         ///intake servo
         if (USE_INTAKE_SERVOS) {
 
-            if (y2_cnt_ % 3 == 1) {
+            if (y2_cnt_ % 4 == 1) {
                 servo_intake_l_.setPosition(INTAKE_POWER_IN);
                 servo_intake_r_.setPosition(1 - INTAKE_POWER_IN);
-            } else if (y2_cnt_ % 3 == 2) {
+            } else if (y2_cnt_ % 4 == 3) {
                 servo_intake_l_.setPosition(INTAKE_POWER_OUT);
                 servo_intake_r_.setPosition(1 - INTAKE_POWER_OUT);
-            } else if (y2_cnt_ % 3 == 0) {
+            } else {
                 servo_intake_l_.setPosition(INTAKE_POWER_BRAKE);
                 servo_intake_r_.setPosition(INTAKE_POWER_BRAKE);
             }
@@ -431,6 +431,7 @@ public class Y18Tele extends Y18Common
             } else if (mineral_lift_auto_up_flag_) {         //up
                 if (motor_winch_enc > (WINCH_UP_ENC_CNT+200)) {
                     power_motor_winch = WINCH_UP_POWER;
+                    y2_cnt_ = 4;    //means the intake stops
                 }
 
                 if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_UP_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_UP_POS) {
@@ -445,6 +446,7 @@ public class Y18Tele extends Y18Common
             } else if (mineral_lift_auto_down_flag_) {     //down
                 if (motor_winch_enc < WINCH_AUTO_DOWN_ENC_CNT) {
                     power_motor_winch = WINCH_DOWN_POWER;
+                    y2_cnt_ = 1;    //means the intake goes in
                 }
 
                 if (Math.abs(mineral_lift_enc) >= (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE) && Math.abs(mineral_lift_enc) < MINERALS_LIFT_DOWN_POS) {
