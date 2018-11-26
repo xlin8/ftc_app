@@ -80,6 +80,9 @@ public class Y18Tele extends Y18Common
     int a2_prev_cnt_ = 0;
     int x2_prev_cnt_ = 0;
 
+    ///End game compact
+    boolean USE_COMPACT = true;
+
     ///  Constructor
     public Y18Tele() {
     }
@@ -376,9 +379,9 @@ public class Y18Tele extends Y18Common
 
         //Dumping
         if (USE_SERVO_DUMP) {
-            if (b2_cnt_ % 2 == 1) {                     //if b is pressed once, go down
+            if (gamepad2.b) {                     //if b is pressed once, go down
                 servo_dump_.setPosition(DUMP_DOWN);
-            } else if (b2_cnt_ % 2 == 0) {              //if b is pressed twice, go up
+            } else {              //if b is pressed twice, go up
                 servo_dump_.setPosition(DUMP_UP);
             }
         }
@@ -445,7 +448,7 @@ public class Y18Tele extends Y18Common
                 }
             } else if (mineral_lift_auto_down_flag_) {     //down
                 if (motor_winch_enc < WINCH_AUTO_DOWN_ENC_CNT) {
-                    power_motor_winch = WINCH_DOWN_POWER;
+                    power_motor_winch = LOW_WINCH_DOWN_POWER;
                     y2_cnt_ = 1;    //means the intake goes in
                 }
 
@@ -457,6 +460,21 @@ public class Y18Tele extends Y18Common
                     power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
                 } else if (Math.abs(mineral_lift_enc) < (MINERALS_LIFT_DOWN_POS - MINERALS_DUMP_RANGE)) {
                     power_minerals_lift = MINERALS_LIFT_UP_POWER;
+                }
+            }
+
+            if (gamepad2.right_trigger > 0.5) {
+                mineral_lift_auto_down_flag_ = false;
+                mineral_lift_auto_up_flag_ = false;
+
+                y2_cnt_ = 4;
+
+                if (mineral_lift_enc > MIN_MINERALS_LIFT_ENC_COUNT) {
+                    power_minerals_lift = MINERALS_LIFT_DOWN_POWER;
+                }
+
+                if (motor_winch_enc > (WINCH_UP_ENC_CNT+MINERALS_DUMP_RANGE)) {
+                    power_motor_winch = WINCH_UP_POWER;
                 }
             }
 
