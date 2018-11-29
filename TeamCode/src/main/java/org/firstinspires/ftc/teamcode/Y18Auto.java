@@ -16,7 +16,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+
 import java.lang.Math;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -57,12 +61,13 @@ public class Y18Auto extends Y18Common
     static final int DRIVE_STATE_JUMP = 18;                 // state jump
     static final int DRIVE_SHIFT_GEAR = 19;                 // shift gears to make robot move faster/slower by changing drive_power_factor_
 
-    static final int DRIVE_PICTOGRAPH = 20;
-    static final int DRIVE_LANDING = 21;                    //for landing the robot
+    static final int DRIVE_LANDING = 20;                    //for landing the robot
 
-    static final int DRIVE_PULL_PIN = 22;
+    static final int DRIVE_PULL_PIN = 21;
 
-    static final int DRIVE_DROP_MARKER = 23;
+    static final int DRIVE_DROP_MARKER = 22;
+
+    static final int DRIVE_MINERAL_DETECTION = 23;
 
     static final int DRIVE_MODE_NUM = 24;                   // total number of modes
 
@@ -96,10 +101,14 @@ public class Y18Auto extends Y18Common
     static final double  MAX_HEADING_CORRECTION = 0.95;     // max heading correction; 0, not used
 
     /// Autonomous specific hardware
+    //2018-2019
     VuforiaLocalizer vuforia;
-    VuforiaTrackables relicTrackables;
-    VuforiaTrackable relicTemplate;
-    RelicRecoveryVuMark pictograph_;
+    static final String VUFORIA_KEY = "ATbVhA//////AAAAGQpUcoBny0Xdi+FFWntcC3w9C63+hv3ccdXKcUsUhNYtbt8IbpT9SQ+VsthWIyix0rrzYP8KYaSYY5na+nufoGmLQo8vE8CPWmUj8eZcdlM9k4mi8ge0T2uzuoKZmcllal8cM3hRxo1JBFVtavCrgulnZxQ8hMsbzZuA+dZDGQTOEOCCH8ZHuh6wrIUygVerHfrXXlpeIAQvXzBiYrVPetr3zu3ROn6rno75mQ0KCM8Qp87BGS4Orx+GwxL8FlO+EXA3aSBvDh7+a57co5212MkGIRUceXxAd+BfoFjiWg3SbJpVbDM7TcDApVR88jlqeEDmbc/ODajLjEKziycgihi1rpq1lOBys2oJ68qdVrtO";
+
+    TFObjectDetector tfod;
+    private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
+    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
+    private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
 
 
     /// Autonomous Specific Variables
@@ -156,16 +165,13 @@ public class Y18Auto extends Y18Common
     @Override public void init() {
         super.init();
 
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-        parameters.vuforiaLicenseKey = "ATbVhA//////AAAAGQpUcoBny0Xdi+FFWntcC3w9C63+hv3ccdXKcUsUhNYtbt8IbpT9SQ+VsthWIyix0rrzYP8KYaSYY5na+nufoGmLQo8vE8CPWmUj8eZcdlM9k4mi8ge0T2uzuoKZmcllal8cM3hRxo1JBFVtavCrgulnZxQ8hMsbzZuA+dZDGQTOEOCCH8ZHuh6wrIUygVerHfrXXlpeIAQvXzBiYrVPetr3zu3ROn6rno75mQ0KCM8Qp87BGS4Orx+GwxL8FlO+EXA3aSBvDh7+a57co5212MkGIRUceXxAd+BfoFjiWg3SbJpVbDM7TcDApVR88jlqeEDmbc/ODajLjEKziycgihi1rpq1lOBys2oJ68qdVrtO";
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-        relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-        relicTemplate = relicTrackables.get(0);
-        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
-        relicTrackables.activate();
-        pictograph_ = RelicRecoveryVuMark.UNKNOWN;
+        // initVuforia();
+
+        // if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+        //    initTfod();
+        //} else {
+        //   telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        //}
 
         if( USE_ENC_FOR_DRIVE ) {
             reset_drive_encoders();
@@ -375,9 +381,6 @@ public class Y18Auto extends Y18Common
             if( show_mr_range && mr_range_!=null ) {
                 telemetry.addData("MRRangeSensor", String.format("ultra/opt/dist=%4d/%.2f/%.2f",mr_range_.rawUltrasonic(),mr_range_.cmOptical(),mr_range_.getDistance(DistanceUnit.CM)));
             }
-
-            telemetry.addData("VuMark", "%s visible", pictograph_);
-
 
             if(debug_drive_motors && USE_ENC_FOR_DRIVE) {
                 int lf_enc = motorLF_.getCurrentPosition();
@@ -768,17 +771,66 @@ public class Y18Auto extends Y18Common
                 }
                 gotoNextState( num_state, states, time, true );
             }
-            else if( m == DRIVE_PICTOGRAPH ) {
-                RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
-                if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
-                    pictograph_ = vuMark;
+            else if( m == DRIVE_MINERAL_DETECTION ) {
+
+                /** Wait for the game to begin */
+                telemetry.addData(">", "Detect mineral");
+                telemetry.update();
+
+                /** Activate Tensor Flow Object Detection. */
+
+                if (tfod != null) {
+                    tfod.activate();
+
+                    boolean det_done_flag=false;
+                    while (det_done_flag==false) {
+                        // getUpdatedRecognitions() will return null if no new information is available since
+                        // the last time that call was made.
+                        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                        if (updatedRecognitions != null) {
+                            telemetry.addData("# Object Detected = ", updatedRecognitions.size());
+                            if (updatedRecognitions.size() == 3) {
+                                int goldMineralX = -1;
+                                int silverMineral1X = -1;
+                                int silverMineral2X = -1;
+                                for (Recognition recognition : updatedRecognitions) {
+                                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                                        goldMineralX = (int) recognition.getLeft();
+                                    } else if (silverMineral1X == -1) {
+                                        silverMineral1X = (int) recognition.getLeft();
+                                    } else {
+                                        silverMineral2X = (int) recognition.getLeft();
+                                    }
+                                }
+
+                                if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
+                                    det_done_flag = true;
+
+                                    if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
+                                        telemetry.addData("Gold Mineral Position", "Left");
+                                    } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
+                                        telemetry.addData("Gold Mineral Position", "Right");
+                                    } else {
+                                        telemetry.addData("Gold Mineral Position", "Center");
+                                    }
+                                } else {
+                                    telemetry.addData("Gold mineral position", "Unknown");
+                                }
+                            }
+
+                            telemetry.update();
+                        }
+
+                        double period = Math.abs( states[ curr_state_id_*2 ] );   // time limit
+                        if( time>=(curr_state_start_t_+period) ) {  // timeout
+                            det_done_flag = true;
+                        }
+                    }
+
+                    tfod.shutdown();
                 }
-                double period = Math.abs( states[ curr_state_id_*2 ] );   // time limit
-                if( time>=(curr_state_start_t_+period) ) {  // timeout
-                    gotoNextState( num_state, states, time, true );
-                } else { // keep checking
-                    mode = m;
-                }
+
+                gotoNextState( num_state, states, time, true );
             }
             else if (m == DRIVE_LANDING) {
                 double lift_enc = motorLift_.getCurrentPosition();
@@ -974,6 +1026,16 @@ public class Y18Auto extends Y18Common
                 10.0, DRIVE_STOP
         };
 
+        double [] testTensorFlow = {
+                0.1, DRIVE_STOP,
+                //1.0, DRIVE_LANDING,
+                //1.7, DRIVE_PULL_PIN,
+                //0.1, DRIVE_RESET_ENC_DONE,
+                5.0, DRIVE_MINERAL_DETECTION,
+                //1.0, DRIVE_FORWARD_ENC,
+                60.0, DRIVE_STOP
+        };
+
 
         double [] CraterTrip1 /*dummy made*/ = {
                 0.1, DRIVE_STOP,
@@ -1041,6 +1103,8 @@ public class Y18Auto extends Y18Common
             return getDriveMode(testTrip3, t);
         } else if( trip_name_ == "TestCalDist") {
             return getDriveMode(testTrip1B, t);
+        } else if (trip_name_ == "TestTensorFlow"){
+            return getDriveMode(testTensorFlow, t);
         } else {
             return getDriveMode(CraterTrip1, t);
         }
@@ -1341,6 +1405,27 @@ public class Y18Auto extends Y18Common
 
         if( err<0.0 ) new_err *= -1.0;
         return new_err;
+    }
+
+    void initVuforia() {
+        // int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        // parameters.vuforiaLicenseKey = "ATbVhA//////AAAAGQpUcoBny0Xdi+FFWntcC3w9C63+hv3ccdXKcUsUhNYtbt8IbpT9SQ+VsthWIyix0rrzYP8KYaSYY5na+nufoGmLQo8vE8CPWmUj8eZcdlM9k4mi8ge0T2uzuoKZmcllal8cM3hRxo1JBFVtavCrgulnZxQ8hMsbzZuA+dZDGQTOEOCCH8ZHuh6wrIUygVerHfrXXlpeIAQvXzBiYrVPetr3zu3ROn6rno75mQ0KCM8Qp87BGS4Orx+GwxL8FlO+EXA3aSBvDh7+a57co5212MkGIRUceXxAd+BfoFjiWg3SbJpVbDM7TcDApVR88jlqeEDmbc/ODajLjEKziycgihi1rpq1lOBys2oJ68qdVrtO";
+        // parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        // this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        this.vuforia = ClassFactory.getInstance().createVuforia(parameters);
+    }
+
+    void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 
 }
