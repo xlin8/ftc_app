@@ -12,10 +12,8 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
@@ -168,10 +166,10 @@ public class Y18Auto extends Y18Common
         // initVuforia();
 
         // if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-        //    initTfod();
-        //} else {
+        //   initTfod();
+        // } else {
         //   telemetry.addData("Sorry!", "This device is not compatible with TFOD");
-        //}
+        // }
 
         if( USE_ENC_FOR_DRIVE ) {
             reset_drive_encoders();
@@ -197,6 +195,14 @@ public class Y18Auto extends Y18Common
         curr_time_ = 0.0;
 
         if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
+
+        /* initVuforia();
+
+        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+            initTfod();
+        } else {
+            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        } */
     }
 
     @Override public void loop() {
@@ -730,17 +736,16 @@ public class Y18Auto extends Y18Common
                 }
             } else if (m == DRIVE_PULL_PIN ){
                 //use servo to pull pin out of hanger
-                double time_lift_pin_ = time;
-                if (time_lift_pin_ - curr_state_start_t_ <= 3){
+                double period = Math.abs( states[ curr_state_id_*2 ] );
+                if (time - curr_state_start_t_ <= period){
                     servo_lift_pin_.setPosition(LIFT_PIN_PULL);
                     mode = m;
                 } else {
-                    servo_lift_pin_.setPosition(LIFT_PIN_STOP);
                     gotoNextState( num_state, states, time, true );
                 }
             } else if (m == DRIVE_DROP_MARKER) {
-                double time_drop_marker_ = time;
-                if (time_drop_marker_ - curr_state_start_t_<=3) {
+                double period = Math.abs( states[ curr_state_id_*2 ] );
+                if (time - curr_state_start_t_<= period) {
                     servo_marker_.setPosition(MARKER_DROP_POS_);
                     mode = m;
                 } else {
@@ -1052,8 +1057,8 @@ public class Y18Auto extends Y18Common
 
         double [] CraterTrip1OR /*dummy made*/ = {
                 0.1, DRIVE_STOP,
-                1.0, DRIVE_LANDING,
-                1.7, DRIVE_PULL_PIN,
+                1.5, DRIVE_LANDING,
+                1.0, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
                 1.0, DRIVE_FORWARD_ENC,
                 60.0, DRIVE_STOP
@@ -1062,7 +1067,7 @@ public class Y18Auto extends Y18Common
         double [] DepotTrip2 /*dummy made*/ = {
                 0.1, DRIVE_STOP,
                 1.0, DRIVE_LANDING,
-                1.7, DRIVE_PULL_PIN,
+                1.5, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
                 1.5, DRIVE_FORWARD_ENC, ///TODO: Change for depot position
                 2.0, DRIVE_DROP_MARKER,
@@ -1416,7 +1421,7 @@ public class Y18Auto extends Y18Common
 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        parameters.cameraDirection = CameraDirection.BACK;
         this.vuforia = ClassFactory.getInstance().createVuforia(parameters);
     }
 

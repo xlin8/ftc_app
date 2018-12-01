@@ -56,7 +56,7 @@ public class Y18Common extends OpMode {
     static final double  LIFT_ENC_COUNT_PER_GLYPH = 750;    // 750 for 6inch, new NeverRest 3.7 motor
     //static final double  MAX_LIFT_ENC_COUNT = LIFT_ENC_COUNT_PER_GLYPH*3+200;    // 3 glyphs + extra room
     static final double  MAX_LIFT_ENC_COUNT = 15000;        //  TBD
-    static final double LANDING_ENC_CNT = 12500;            //TBD
+    static final double LANDING_ENC_CNT = 13500;            //TBD
     static final double  MIN_LIFT_ENC_COUNT = 0;            // min lift encoder count to prevent reverse
     static final double  LIFT_DIP_ENC_COUNT = 100;          // max lift encoder dip allowed; auto-hold OFF if set to 0
     static final double  MIN_LIFT_HOLD_POWER = 0.05;        // min power to hold the lift
@@ -97,7 +97,7 @@ public class Y18Common extends OpMode {
     static final double WINCH_MANUAL_DOWN_ENC_CNT = 815;
     static final double WINCH_UP_ENC_CNT = 0;
     static final double WINCH_AUTO_DOWN_ENC_CNT = 1000;
-    double LOW_WINCH_DOWN_POWER = 0.75;
+    double LOW_WINCH_DOWN_POWER = 0.8;
 
     ///Team marker servo
     boolean USE_SERVO_MARKER = true;
@@ -114,10 +114,11 @@ public class Y18Common extends OpMode {
     //uses the left joystick y axis for up and down.
 
     ///Lift pin servo
+    boolean USE_SERVO_LIFT_PIN = true;
     Servo  servo_lift_pin_;                                 // Servo for lift pin
     double servo_lift_pin_pos_;                            // Lift pin servo position
-    static final double  LIFT_PIN_STOP = CR_SERVO_STOP;
-    static final double  LIFT_PIN_PULL = 0.0;
+    static final double  LIFT_PIN_STOP = 1.0;
+    static final double  LIFT_PIN_PULL = 1.0 - LIFT_PIN_STOP;
 
     ///Intake extension (continuous servo)
     boolean USE_SERVO_EXTENSION = true;
@@ -225,7 +226,8 @@ public class Y18Common extends OpMode {
             motorLift_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             ///TODO: Fix stuck init, reset lift position
             servo_lift_pin_ = hardwareMap.servo.get("servo_lift_pin_");
-            servo_lift_pin_pos_ = LIFT_PIN_STOP ;
+            servo_lift_pin_pos_ = LIFT_PIN_STOP;
+            servo_lift_pin_.setPosition(servo_lift_pin_pos_);
         }
 
         if(USE_SERVO_EXTENSION){
