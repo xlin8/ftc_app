@@ -16,18 +16,20 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //b for dumping servo, down and up - 180 servo - done and compiles
 //right(down) and left(up) bumpers for winch (servo) that lifts up/down the entire pickup mechanism - not using toggles because they give analog value...
 //left toggle for linear slide (intake)
-//right toggle for Extention linear slide (intake)  todo : program
+//right toggle for extention linear slide (intake)  todo : program
 // D-pad for landing lin-slide (up/down)
-//a for lowest mineral linear slide position
+//a for lowest-ish mineral linear slide position
 //x for highest mineral linear slide position
 //right toggle for extension intake linear slide
+//right trigger driver 2 = compact front linear slide, intake off, winch up
+//left trigger driver 1 = manual pulling of the servo pin
 
 
 /**
  * Created by aliris on 10/13/2018.
  */
 
-/// TeleOp Run for League Meet0
+/// TeleOp Run for League Meet 2
 @TeleOp(name="Y18Tele", group="GG")
 //@Disabled
 public class Y18Tele extends Y18Common
@@ -493,7 +495,7 @@ public class Y18Tele extends Y18Common
 
         //Servo lift pin
         if (USE_SERVO_LIFT_PIN) {
-            if (gamepad2.left_trigger > 0.0) servo_lift_pin_pos_ = LIFT_PIN_PULL;
+            if (gamepad1.left_trigger > 0.0) servo_lift_pin_pos_ = LIFT_PIN_PULL;
             servo_lift_pin_.setPosition(servo_lift_pin_pos_);
         }
 
