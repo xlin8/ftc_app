@@ -357,10 +357,6 @@ public class Y18Tele extends Y18Common
         }
         motorLift_.setPower(power_lift_);
 
-        /// Test
-        if (gamepad1.a) servo_lift_pin_pos_ = LIFT_PIN_PULL;
-        servo_lift_pin_.setPosition(servo_lift_pin_pos_);
-
         ///intake servo
         if (USE_INTAKE_SERVOS) {
 
@@ -493,6 +489,12 @@ public class Y18Tele extends Y18Common
             power_minerals_lift = Range.clip(power_minerals_lift, -1, 1);
             motorMineralsLift_.setPower(power_minerals_lift);
 
+        }
+
+        //Servo lift pin
+        if (USE_SERVO_LIFT_PIN) {
+            if (gamepad2.left_trigger > 0.0) servo_lift_pin_pos_ = LIFT_PIN_PULL;
+            servo_lift_pin_.setPosition(servo_lift_pin_pos_);
         }
 
         //extension linear slide servo
