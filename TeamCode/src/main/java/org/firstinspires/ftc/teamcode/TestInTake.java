@@ -33,7 +33,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
  */
 
 @TeleOp(name="TestInTake", group="GG")
-//@Disabled
+@Disabled
 public class TestInTake extends OpMode {
 
    /// Main timer

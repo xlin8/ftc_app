@@ -1069,7 +1069,7 @@ public class Y18Auto extends Y18Common
                 1.0, DRIVE_LANDING,
                 1.5, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
-                1.5, DRIVE_FORWARD_ENC, ///TODO: Change for depot position
+                1.6, DRIVE_FORWARD_ENC, ///TODO: Change for depot position
                 2.0, DRIVE_DROP_MARKER,
                 60.0, DRIVE_STOP
         };

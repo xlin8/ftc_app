@@ -4,6 +4,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /// TeleOp Run for League Meet0 
 @TeleOp(name="Y17TeleTestWORLD", group="GG")
+@Disabled
 public class Y17TeleTestIntake extends Y17LM0Common
 {
 

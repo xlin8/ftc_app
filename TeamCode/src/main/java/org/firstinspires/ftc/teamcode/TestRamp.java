@@ -33,7 +33,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
  */
 
 @TeleOp(name="TestRamp", group="GG")
-//@Disabled
+@Disabled
 public class TestRamp extends OpMode {
 
    /// Main timer

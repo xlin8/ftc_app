@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  */
 
 @Autonomous(name="RedPos1SR", group="GG")
-//@Disabled
+@Disabled
 public class Y17AutoRed1SR extends Y17AutoTest
 {
 

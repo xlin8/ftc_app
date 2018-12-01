@@ -37,7 +37,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
  */
 
 @TeleOp(name="Java Training Melinda", group="GG")
-//@Disabled
+@Disabled
 public class Y18JulyJavaTrainingTemplate extends OpMode {
 
    /// Main timer

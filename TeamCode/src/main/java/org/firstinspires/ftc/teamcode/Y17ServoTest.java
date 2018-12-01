@@ -41,7 +41,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 //@Autonomous(name = "Concept: NullOp", group = "Concept")
 @TeleOp(name="ServoTest", group="GG")
-//@Disabled
+@Disabled
 public class Y17ServoTest extends OpMode {
 
   private ElapsedTime runtime = new ElapsedTime();
