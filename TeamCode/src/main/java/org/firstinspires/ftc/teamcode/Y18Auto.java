@@ -5,6 +5,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -28,7 +29,7 @@ import java.util.Locale;
 
 ///  Autonomous Run for League Meet0
 @Autonomous(name="Y18Auto", group="GG")
-//@Disabled
+@Disabled
 public class Y18Auto extends Y18Common
 {
     /// Drive modes
