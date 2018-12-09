@@ -83,6 +83,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
     static final boolean USE_MINERAL_DETECTION = true;
+    static final boolean DETECT_GOLD_MINERAL_BEFORE_START = true;
     static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     static final String LABEL_SILVER_MINERAL = "Silver Mineral";
@@ -128,7 +129,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         initialize();
 
         // Wait for the game to begin
-        telemetry.addData(">", "Press Play to start autonomous");
+        telemetry.addData(">", "Press Play to start autonomous " + "(Gold_at="+String.valueOf(goldPosition_)+" is_guessed="+String.valueOf(isGuessedGoldPosition_)+")");
         telemetry.update();
         waitForStart();
 
@@ -151,6 +152,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
             if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
                 initializeTfod();
+
+                if (DETECT_GOLD_MINERAL_BEFORE_START) {
+                    // Detect gold mineral position before pushing the START buton
+                    if (tfod_ != null) tfod_.activate();
+
+                    detectGoldMineralPosition(timer_.time(), 20.0);
+                }
             } else {
                 telemetry.addData("Warn", "This device is not compatible with TFOD");
             }
@@ -175,9 +183,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         if (USE_LIFT) motorLift_.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        if (opModeIsActive()) {
-            // Activate Tensor Flow Object Detection.
-            if (tfod_ != null) tfod_.activate();
+        // Activate Tensor Flow Object Detection.
+        if (DETECT_GOLD_MINERAL_BEFORE_START == false) {
+           if (tfod_ != null) tfod_.activate();
         }
     }
 
@@ -332,6 +340,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_RESET_ENC_DONE:
                 return 0.0;
             case DRIVE_FORWARD_ENC:
+                return DRIVE_ENC_WHEEL_POWER;
             case DRIVE_FORWARD_ENC_SLOW:
             case DRIVE_FORWARD_ENC_TO_WALL:
                 return DRIVE_ENC_SLOW_WHEEL_POWER;
@@ -373,6 +382,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_RESET_ENC_DONE:
                 return 0.0;
             case DRIVE_FORWARD_ENC:
+                return (-1.0 * DRIVE_ENC_WHEEL_POWER);
             case DRIVE_FORWARD_ENC_SLOW:
             case DRIVE_FORWARD_ENC_TO_WALL:
                 return (-1.0 * DRIVE_ENC_SLOW_WHEEL_POWER);
@@ -606,11 +616,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         double to_turn_deg = Math.abs( heading_-tg_deg );
         if ((curr_mode == DRIVE_TURN_TO_LEFT && heading_ >= tg_deg) ||   // MR Gryo, turn left, heading increase
             (curr_mode == DRIVE_TURN_TO_RIGHT && heading_ <= tg_deg)) {  // MR Gyro, turn right, heading decrease
-           return gotoNextState(states, time, true);
+            return gotoNextState(states, time, true);
         }
 
         if (SLOW_TURN_DEGREE > 0.0 && to_turn_deg < SLOW_TURN_DEGREE) {
-           turnSlow_ = true;
+            turnSlow_ = true;
+        } else {
+            turnSlow_ = false;
         }
 
         return curr_mode;
@@ -711,70 +723,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     }
 
     int getDriveModeWhenAtDriveMineralDetection(double [] states) {
-        if (tfod_ != null) {
-            telemetry.addData(">", "Detect mineral");
-            telemetry.update();
-
-            double period = Math.abs(states[currStateId_ * 2]);
-            int num_det_times = 0;
-            int [] det_gold_cnt = {0, 0, 0};
-            while (num_det_times < MAX_TIMES_DETECT_GOLD_MINERAL) {
-                switch (detectMineralsByTfod()) {
-                    case GOLD_MINERAL_AT_LEFT:
-                        ++det_gold_cnt[0];
-                        ++num_det_times;
-                        break;
-                    case GOLD_MINERAL_AT_CENTER:
-                        ++det_gold_cnt[1];
-                        ++num_det_times;
-                        break;
-                    case GOLD_MINERAL_AT_RIGHT:
-                        ++det_gold_cnt[2];
-                        ++num_det_times;
-                        break;
-                    default:
-                        break;
-                }
-
-                if ((timer_.time() - currStateStartTime_) > period) break;
-            }
-
-            if (det_gold_cnt[0] > det_gold_cnt[1]) {
-                if (det_gold_cnt[0] > det_gold_cnt[2]) {
-                    goldPosition_ = GOLD_MINERAL_AT_LEFT;
-                } else if (det_gold_cnt[2] > det_gold_cnt[0]) {
-                    goldPosition_ = GOLD_MINERAL_AT_RIGHT;
-                } else {
-                    // We do not know where it is. Assume Left
-                    goldPosition_ = GOLD_MINERAL_AT_LEFT;
-                    isGuessedGoldPosition_ = true;
-                }
-            } else if (det_gold_cnt[0] == det_gold_cnt[1]) {
-                if (det_gold_cnt[2] > det_gold_cnt[0]) {
-                    goldPosition_ = GOLD_MINERAL_AT_RIGHT;
-                } else {
-                    // We do not know where it is. Assume Left.
-                    goldPosition_ = GOLD_MINERAL_AT_LEFT;
-                    isGuessedGoldPosition_ = true;
-                }
-            } else {
-                if (det_gold_cnt[1] > det_gold_cnt[2]) {
-                    goldPosition_ = GOLD_MINERAL_AT_CENTER;
-                } else if (det_gold_cnt[2] > det_gold_cnt[1]) {
-                    goldPosition_ = GOLD_MINERAL_AT_RIGHT;
-                } else {
-                    // We do not know where it is. Assume center
-                    goldPosition_ = GOLD_MINERAL_AT_CENTER;
-                    isGuessedGoldPosition_ = true;
-                }
-            }
-
-            telemetry.addData("Gold at", "%d (num_det_cnt=%d, is_guessed="+String.valueOf(isGuessedGoldPosition_)+", used_time=%.2f)",
-                    goldPosition_, num_det_times, (timer_.time() - currStateStartTime_));
-            telemetry.update();
-
-            return gotoNextState(states, time, true);
-        }
+        double period = Math.abs(states[currStateId_ * 2]);
+        detectGoldMineralPosition(currStateStartTime_, period);
 
         return gotoNextState(states, time, true);
     }
@@ -797,7 +747,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     int getDriveModeRed(double t) {
         double [] CraterTrip = {
                 0.1, DRIVE_STOP,
-                2.5, DRIVE_MINERAL_DETECTION,
+                // 2.5, DRIVE_MINERAL_DETECTION,
                 1.0, DRIVE_LANDING,
                 1.5, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
@@ -808,7 +758,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         double [] DepotTrip = {
                 0.1, DRIVE_STOP,
-                2.5, DRIVE_MINERAL_DETECTION,
+                // 2.5, DRIVE_MINERAL_DETECTION,
                 1.0, DRIVE_LANDING,
                 1.5, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
@@ -975,7 +925,72 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         tfod_.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 
-    int detectMineralsByTfod() {
+    void detectGoldMineralPosition(double start_time, double max_used_time) {
+        int num_det_times = 0;
+        int [] det_gold_cnt = {0, 0, 0};
+
+        if (tfod_ != null) {
+            telemetry.addData(">", "Detect mineral");
+            telemetry.update();
+
+            while (num_det_times < MAX_TIMES_DETECT_GOLD_MINERAL) {
+                switch (detectGoldMineralsByTfod()) {
+                    case GOLD_MINERAL_AT_LEFT:
+                        ++det_gold_cnt[0];
+                        ++num_det_times;
+                        break;
+                    case GOLD_MINERAL_AT_CENTER:
+                        ++det_gold_cnt[1];
+                        ++num_det_times;
+                        break;
+                    case GOLD_MINERAL_AT_RIGHT:
+                        ++det_gold_cnt[2];
+                        ++num_det_times;
+                        break;
+                    default:
+                        break;
+                }
+
+                if ((timer_.time() - start_time) > max_used_time) break;
+            }
+        }
+
+        if (det_gold_cnt[0] > det_gold_cnt[1]) {
+            if (det_gold_cnt[0] > det_gold_cnt[2]) {
+                goldPosition_ = GOLD_MINERAL_AT_LEFT;
+            } else if (det_gold_cnt[2] > det_gold_cnt[0]) {
+                goldPosition_ = GOLD_MINERAL_AT_RIGHT;
+            } else {
+                // We do not know where it is. Assume Left
+                goldPosition_ = GOLD_MINERAL_AT_LEFT;
+                isGuessedGoldPosition_ = true;
+            }
+        } else if (det_gold_cnt[0] == det_gold_cnt[1]) {
+            if (det_gold_cnt[2] > det_gold_cnt[0]) {
+                goldPosition_ = GOLD_MINERAL_AT_RIGHT;
+            } else {
+                // We do not know where it is. Assume Left.
+                goldPosition_ = GOLD_MINERAL_AT_LEFT;
+                isGuessedGoldPosition_ = true;
+            }
+        } else {
+            if (det_gold_cnt[1] > det_gold_cnt[2]) {
+                goldPosition_ = GOLD_MINERAL_AT_CENTER;
+            } else if (det_gold_cnt[2] > det_gold_cnt[1]) {
+                goldPosition_ = GOLD_MINERAL_AT_RIGHT;
+            } else {
+                // We do not know where it is. Assume center
+                goldPosition_ = GOLD_MINERAL_AT_CENTER;
+                isGuessedGoldPosition_ = true;
+            }
+        }
+
+        telemetry.addData("Gold at", "%d (num_det_cnt=%d, is_guessed="+String.valueOf(isGuessedGoldPosition_)+", used_time=%.2f)",
+                goldPosition_, num_det_times, (timer_.time() - currStateStartTime_));
+        telemetry.update();
+    }
+
+    int detectGoldMineralsByTfod() {
         if (tfod_ == null) return GOLD_MINERAL_AT_UNKNOWN;
 
         List<Recognition> updatedRecognitions = tfod_.getUpdatedRecognitions();
