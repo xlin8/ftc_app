@@ -59,9 +59,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
     /// Power for drive and turn, need be tuned for each robot
-    static final double DRIVE_ENC_WHEEL_POWER = 0.40;       // default driving power using encoder; ~29sec for 6*3m, for 2017
+    static final double DRIVE_ENC_WHEEL_POWER = 0.50;       // default driving power using encoder; ~29sec for 6*3m, for 2017
     static final double DRIVE_ENC_SLOW_WHEEL_POWER = 0.15;  // power for encoder based slow drive for STOP_WHITE
-    static final double DRIVE_ENC_TURN_WHEEL_POWER = 0.12;  // default turning power using encoder, 2017/09/08
+    static final double DRIVE_ENC_TURN_WHEEL_POWER = 0.20;  // default turning power using encoder, 2017/09/08
     static final double DRIVE_WHEEL_POWER = 0.20;           // default driving power
     static final double TURN_WHEEL_POWER = 0.20;            // default turning power
     static final double TURN_SLOW_WHEEL_POWER = 0.15;       // slow turning power
@@ -83,7 +83,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
     static final boolean USE_MINERAL_DETECTION = true;
-    static final boolean DETECT_GOLD_MINERAL_BEFORE_START = true;
+    static final boolean DETECT_GOLD_MINERAL_BEFORE_START = false;
     static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     static final String LABEL_SILVER_MINERAL = "Silver Mineral";
@@ -157,7 +157,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                     // Detect gold mineral position before pushing the START buton
                     if (tfod_ != null) tfod_.activate();
 
-                    detectGoldMineralPosition(timer_.time(), 20.0);
+                    detectGoldMineralPosition(timer_.time(), 10.0);
                 }
             } else {
                 telemetry.addData("Warn", "This device is not compatible with TFOD");
@@ -745,27 +745,56 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     /// Define red trip
     int getDriveModeRed(double t) {
-        double [] CraterTrip = {
+        double [] CraterTripCenter = {
                 0.1, DRIVE_STOP,
                 // 2.5, DRIVE_MINERAL_DETECTION,
-                1.0, DRIVE_LANDING,
-                1.5, DRIVE_PULL_PIN,
+                // 1.0, DRIVE_LANDING,
+                // 1.5, DRIVE_PULL_PIN,
                 0.1, DRIVE_RESET_ENC_DONE,
-                0.85, DRIVE_FORWARD_ENC,
+                0.8, DRIVE_FORWARD_ENC,
                 0.1, DRIVE_RESET_ENC_DONE,
-                0.4, DRIVE_BACKWARD_ENC,
+                0.37, DRIVE_BACKWARD_ENC,
                 0.1, DRIVE_RESET_ENC_DONE,
                 80, DRIVE_TURN_LEFT_ENC,
                 0.1, DRIVE_RESET_ENC_DONE,
-                1.4, DRIVE_FORWARD_ENC,
+                1.5, DRIVE_FORWARD_ENC,
                 0.1, DRIVE_RESET_ENC_DONE,
-                45, DRIVE_TURN_LEFT_ENC,
+                43, DRIVE_TURN_LEFT_ENC,
+                1.5, DRIVE_SHIFT_GEAR,
                 0.1, DRIVE_RESET_ENC_DONE,
-                1.0, DRIVE_FORWARD_ENC,
+                0.85, DRIVE_FORWARD_ENC,
                 0.1, DRIVE_RESET_ENC_DONE,
-                2.0, DRIVE_DROP_MARKER,
-                2.5, DRIVE_BACKWARD_ENC,
+                1.0, DRIVE_DROP_MARKER,
+                1.9, DRIVE_BACKWARD_ENC,
                 0.1, DRIVE_RESET_ENC_DONE,
+                60.0, DRIVE_STOP
+        };
+
+        double [] CraterTrip = {
+                0.1, DRIVE_STOP,
+                // 2.5, DRIVE_MINERAL_DETECTION,
+                // 1.0, DRIVE_LANDING,
+                // 1.5, DRIVE_PULL_PIN,
+                0.1, DRIVE_RESET_ENC_DONE,
+                0.2, DRIVE_FORWARD_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                35, DRIVE_TURN_LEFT_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                0.6, DRIVE_FORWARD_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                0.37, DRIVE_BACKWARD_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                40, DRIVE_TURN_LEFT_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                0.92, DRIVE_FORWARD_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                55, DRIVE_TURN_LEFT_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                1.8, DRIVE_SHIFT_GEAR,
+                1.3, DRIVE_FORWARD_ENC,
+                0.1, DRIVE_RESET_ENC_DONE,
+                1.0, DRIVE_DROP_MARKER,
+                1.87, DRIVE_BACKWARD_ENC,
                 60.0, DRIVE_STOP
         };
 
