@@ -89,7 +89,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-    static final boolean USE_IMU = true;                  // use IMU sensor to turn        //turned "true" by Aditi Dec 9th 2018
+    static final boolean USE_IMU = true;                  // use IMU sensor to turn
     Orientation imuAngles_;
     double heading_ = 0.0;                                 // current heading
 

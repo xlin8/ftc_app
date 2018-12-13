@@ -47,11 +47,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int DRIVE_WAIT_TILL = 17;                  // wait till a time is reached
     static final int DRIVE_STATE_JUMP = 18;                 // state jump
     static final int DRIVE_SHIFT_GEAR = 19;                 // shift gears to make robot move faster/slower by changing drivePowerFactor_
-    static final int DRIVE_LANDING = 20;                    //for landing the robot
-    static final int DRIVE_PULL_PIN = 21;
-    static final int DRIVE_DROP_MARKER = 22;
-    static final int DRIVE_MINERAL_DETECTION = 23;
-    static final int DRIVE_MODE_NUM = 24;                   // total number of modes
+    static final int DRIVE_CHANGE_TRIP = 20;                // Change the trip name and use the task list in the new trip
+    static final int DRIVE_LANDING = 21;                    //for landing the robot
+    static final int DRIVE_PULL_PIN = 22;
+    static final int DRIVE_DROP_MARKER = 23;
+    static final int DRIVE_MINERAL_DETECTION = 24;
+    static final int DRIVE_MODE_NUM = 25;                   // total number of modes
 
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
@@ -97,6 +98,141 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double MIN_MINERAL_HEIGHT_WIDTH_RATIO = 0.75;
     static final double MAX_MINERAL_BOTTOM_DIFF_RATIO = 0.4;
 
+    static final int COMMON_TRIP = 0;
+    static final int CRATER_TRIP_LEFT = 1;
+    static final int CRATER_TRIP_CENTER = 2;
+    static final int CRATER_TRIP_RIGHT = 3;
+    static final int CRATER_TRIP_LEFT_SHORT = 4;
+    static final int CRATER_TRIP_CENTER_SHORT = 5;
+    static final int CRATER_TRIP_RIGHT_SHORT = 6;
+    static final int DEPOT_TRIP_LEFT = 7;
+    static final int DEPOT_TRIP_CENTER = 8;
+    static final int DEPOT_TRIP_RIGHT = 9;
+    static final int DEPOT_TRIP_LEFT_SHORT = 10;
+    static final int DEPOT_TRIP_CENTER_SHORT = 11;
+    static final int DEPOT_TRIP_RIGHT_SHORT = 12;
+    static final int NO_TRIP = 13;
+    static final int NUM_TRIPS = 14;
+
+    static final double [] CommonTrip = {
+            0.1, DRIVE_STOP,
+            2.5, DRIVE_MINERAL_DETECTION,
+            1.0, DRIVE_LANDING,
+            1.5, DRIVE_PULL_PIN,
+            (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripLeft = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            35, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.37, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.92, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            55, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.8, DRIVE_SHIFT_GEAR,
+            1.3, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_DROP_MARKER,
+            1.87, DRIVE_BACKWARD_ENC,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripCenter = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.8, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.37, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            80, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.5, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            43, DRIVE_TURN_LEFT_ENC,
+            1.5, DRIVE_SHIFT_GEAR,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.85, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_DROP_MARKER,
+            1.9, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripRight = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripLeftShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripCenterShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripRightShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] DepotTripLeft = {
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            32, DRIVE_TURN_RIGHT_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.75, DRIVE_BACKWARD_ENC,
+            60.0, DRIVE_STOP
+    };
+    static final double [] DepotTripCenter = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.7, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_ENC_DONE,                                 // added by Aditi Dec 9th, 2018
+            // 0.05, DRIVE_BACKWARD_ENC,
+            45, DRIVE_TURN_RIGHT_ENC,
+            1.5, DRIVE_SHIFT_GEAR,
+            0.1, DRIVE_RESET_ENC_DONE,
+            2.3, DRIVE_BACKWARD_ENC,
+            60.0, DRIVE_STOP
+    };
+    static final double [] DepotTripRight = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] DepotTripLeftShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] DepotTripCenterShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] DepotTripRightShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] NoTrip = {
+            60.0, DRIVE_STOP
+    };
+
     // Control state machine
     int currStateId_ = -1;                                  // current state ID
     double currStateStartTime_ = 0.0;                       // current state start time
@@ -122,7 +258,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     int goldPosition_ = GOLD_MINERAL_AT_UNKNOWN;
     boolean isGuessedGoldPosition_ = false;
 
-    String tripName_ = "DepotTrip";                          // trip name
+    boolean isCraterTripFlag_= true;                       // If true, it is trip starting from crater. Otherwise, it is trip starting from depot.
+    boolean isShortTripFlag_ = false;                      // If true, do not deliver the team marker.
+    int currTripId_ = 0;
 
     @Override
     public void runOpMode() {
@@ -136,7 +274,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         initializeWhenStart();
 
         while (opModeIsActive()) {
-            driveRobort();
+            driveRobot();
         }
 
         cleanUpAtEndOfRun();
@@ -157,7 +295,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                     // Detect gold mineral position before pushing the START buton
                     if (tfod_ != null) tfod_.activate();
 
-                    detectGoldMineralPosition(timer_.time(), 20.0);
+                    detectGoldMineralPosition(timer_.time(), 10.0);
                 }
             } else {
                 telemetry.addData("Warn", "This device is not compatible with TFOD");
@@ -195,7 +333,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
        }
     }
 
-    void driveRobort() {
+    void driveRobot() {
         double time_t = timer_.time();
         currTime_ = time_t;
 
@@ -281,7 +419,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         boolean debug_drive_motor_flag = true;
 
         if (show_msg_flag) {
-            telemetry.addData("Trip", String.valueOf(tripName_)+", TimeLeft:"+String.format("%.2f",AUTO_RUN_TIME-time_t));
+            telemetry.addData("Trip", String.valueOf(getTripName(currTripId_))+", TimeLeft:"+String.format("%.2f",AUTO_RUN_TIME-time_t));
             telemetry.addData("CurrState ID", String.valueOf(currStateId_) + " mode=%d", drive_mode);
             telemetry.addData("Heading", String.format("Start=%.2f/Curr=%.2f/Target=%.2f; Error=%.2f/AHE=%.2f/Corr=%.2f; DriveFactor=%.2f", currStateStartHeading_, heading_, targetHeading_, headingError_, adjustedHeadingError_, headingCorrection_, drivePowerFactor_));
 
@@ -495,8 +633,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return getDriveModeWhenAtDriverStateJump(states, time);
             case DRIVE_SHIFT_GEAR:
                 return getDriveModeWhenAtDriveShiftGear(states, time);
-            case DRIVE_LANDING:
-                return getDriveModeWhenAtDriveLandingMode(states, time);
+            case DRIVE_CHANGE_TRIP:
+                return getDriveModeWhenAtChangeTrip(states, time);
+            case DRIVE_LANDING: 
+                return getDriveModeWhenAtDriveLandingMode(states, time); 
             case DRIVE_PULL_PIN:
                 return getDriveModeWhenAtDrivePullPin(states, time);
             case DRIVE_DROP_MARKER:
@@ -682,6 +822,47 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         return gotoNextState(states, time, true);
     }
 
+    int getDriveModeWhenAtChangeTrip(double [] states,
+                                     double time) {
+        int trip_id = (int)states[currStateId_ * 2];
+
+        if (trip_id < NUM_TRIPS) {
+            currTripId_ = trip_id;
+        } else {
+            switch (goldPosition_) {
+                case GOLD_MINERAL_AT_LEFT:
+                    if (isCraterTripFlag_ == true) {
+                        if (isShortTripFlag_ == false) currTripId_ = CRATER_TRIP_LEFT;
+                        else currTripId_ = CRATER_TRIP_LEFT_SHORT;
+                    } else {
+                        if (isShortTripFlag_ == false) currTripId_ = DEPOT_TRIP_LEFT;
+                        else currTripId_ = DEPOT_TRIP_LEFT_SHORT;
+                    }
+                    break;
+                case GOLD_MINERAL_AT_RIGHT:
+                    if (isCraterTripFlag_ == true) {
+                        if (isShortTripFlag_ == false) currTripId_ = CRATER_TRIP_RIGHT;
+                        else currTripId_ = CRATER_TRIP_RIGHT_SHORT;
+                    } else {
+                        if (isShortTripFlag_ == false) currTripId_ = DEPOT_TRIP_RIGHT;
+                        else currTripId_ = DEPOT_TRIP_RIGHT_SHORT;
+                    }
+                    break;
+                default:
+                    if (isCraterTripFlag_ == true) {
+                        if (isShortTripFlag_ == false) currTripId_ = CRATER_TRIP_CENTER;
+                        else currTripId_ = CRATER_TRIP_CENTER_SHORT;
+                    } else {
+                        if (isShortTripFlag_ == false) currTripId_ = DEPOT_TRIP_CENTER;
+                        else currTripId_ = DEPOT_TRIP_CENTER_SHORT;
+                    }
+            }
+        }
+
+        currStateId_ = 0;
+        return getDriveModeRed(time);
+    }
+
     int getDriveModeWhenAtDriveLandingMode(double [] states,
                                            double time) {
         if (motorLift_ != null) {
@@ -743,120 +924,75 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         return gotoNextState(states, time, true);
     }
 
+    String getTripName(int trip_id) {
+        switch (trip_id) {
+            case COMMON_TRIP:
+                return "Common";
+            case CRATER_TRIP_LEFT:
+                return "CraterLeft";
+            case CRATER_TRIP_CENTER:
+                return "CraterCenter";
+            case CRATER_TRIP_RIGHT:
+                return "CraterRight";
+            case CRATER_TRIP_LEFT_SHORT:
+                return "CraterLeftShort";
+            case CRATER_TRIP_CENTER_SHORT:
+                return "CraterCenterShort";
+            case CRATER_TRIP_RIGHT_SHORT:
+                return "CraterRightShort";
+            case DEPOT_TRIP_LEFT:
+                return "DepotLeft";
+            case DEPOT_TRIP_CENTER:
+                return "DepotCenter";
+            case DEPOT_TRIP_RIGHT:
+                return "DepotRight";
+            case DEPOT_TRIP_LEFT_SHORT:
+                return "DepotLeftShort";
+            case DEPOT_TRIP_CENTER_SHORT:
+                return "DepotCenterShort";
+            case DEPOT_TRIP_RIGHT_SHORT:
+                return "DepotRightShort";
+            default:  // NO_TRIP
+                break;
+        }
+
+        return "NoTip";
+    }
+
     /// Define red trip
     int getDriveModeRed(double t) {
-        double [] CraterTrip = {
-                0.1, DRIVE_STOP,
-                // 2.5, DRIVE_MINERAL_DETECTION,
-                1.0, DRIVE_LANDING,
-                1.7, DRIVE_PULL_PIN,
-                0.1, DRIVE_RESET_ENC_DONE,
-                1.0, DRIVE_FORWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                0.4, DRIVE_BACKWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,              //added from here...
-                80, DRIVE_TURN_LEFT_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                1.4, DRIVE_FORWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                45, DRIVE_TURN_LEFT_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                1.0, DRIVE_FORWARD_ENC,
-                2.0, DRIVE_DROP_MARKER,
-                0.1, DRIVE_RESET_ENC_DONE,
-                2.5, DRIVE_BACKWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,              // ... to here by Aditi Dec 9th, 2018                60.0, DRIVE_STOP
-        };
-
-        double [] DepotTripCenter = {
-                0.1, DRIVE_STOP,
-                // 2.5, DRIVE_MINERAL_DETECTION,
-              // 1.0, DRIVE_LANDING,                          todo : need to un-comment
-              //1.5, DRIVE_PULL_PIN,                         todo : landing and pull pin
-                0.1, DRIVE_RESET_ENC_DONE,
-
-                1.7, DRIVE_FORWARD_ENC,
-                1.0, DRIVE_DROP_MARKER,
-                0.1, DRIVE_RESET_ENC_DONE,                                 // added by Aditi Dec 9th, 2018
-                // 0.05, DRIVE_BACKWARD_ENC,
-                45, DRIVE_TURN_RIGHT_ENC,
-
-                1.5, DRIVE_SHIFT_GEAR,
-                0.1, DRIVE_RESET_ENC_DONE,
-                2.3, DRIVE_BACKWARD_ENC,
-
-                60.0, DRIVE_STOP
-        };
-        double [] DepotTripLeft = {        //left
-                0.1, DRIVE_STOP,
-                // 2.5, DRIVE_MINERAL_DETECTION,
-                // 1.0, DRIVE_LANDING,                          todo : need to un-comment
-                //1.5, DRIVE_PULL_PIN,                         todo : landing and pull pin
-                0.1, DRIVE_RESET_ENC_DONE,
-
-                0.2, DRIVE_FORWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-
-                40, DRIVE_TURN_LEFT_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                0.7, DRIVE_FORWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                53, DRIVE_TURN_RIGHT_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                0.6, DRIVE_FORWARD_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                0.1, DRIVE_RESET_ENC_DONE,
-                // 0.05, DRIVE_BACKWARD_ENC,
-                32, DRIVE_TURN_RIGHT_ENC,
-                1.0, DRIVE_DROP_MARKER,
-
-                1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
-                0.1, DRIVE_RESET_ENC_DONE,
-                1.75, DRIVE_BACKWARD_ENC,
-
-                60.0, DRIVE_STOP
-        };
-        double [] DepotTripRight = {
-                0.1, DRIVE_STOP,
-                // 2.5, DRIVE_MINERAL_DETECTION,
-                // 1.0, DRIVE_LANDING,                          todo : need to un-comment
-                //1.5, DRIVE_PULL_PIN,                         todo : landing and pull pin
-                0.1, DRIVE_RESET_ENC_DONE,
-
-                1.7, DRIVE_FORWARD_ENC,
-                1.0, DRIVE_DROP_MARKER,
-                0.1, DRIVE_RESET_ENC_DONE,
-                // 0.05, DRIVE_BACKWARD_ENC,
-                45, DRIVE_TURN_RIGHT_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                2.3, DRIVE_BACKWARD_ENC,
-
-                60.0, DRIVE_STOP
-        };
-        double [] DepotTrip = {
-                0.1, DRIVE_STOP,
-                // 2.5, DRIVE_MINERAL_DETECTION,
-                // 1.0, DRIVE_LANDING,                          todo : need to un-comment
-                //1.5, DRIVE_PULL_PIN,                         todo : landing and pull pin
-                0.1, DRIVE_RESET_ENC_DONE,
-
-                1.7, DRIVE_FORWARD_ENC,
-                1.0, DRIVE_DROP_MARKER,
-                0.1, DRIVE_RESET_ENC_DONE,
-                // 0.05, DRIVE_BACKWARD_ENC,
-                45, DRIVE_TURN_RIGHT_ENC,
-                0.1, DRIVE_RESET_ENC_DONE,
-                2.3, DRIVE_BACKWARD_ENC,
-
-                60.0, DRIVE_STOP
-        };
-
-        /// Run red trips
-        if (tripName_ == "DepotTrip") {
-            return getDriveMode(DepotTrip, t);
-        } else {
-            return getDriveMode(CraterTrip, t);
+        switch (currTripId_) {
+            case COMMON_TRIP:
+                return getDriveMode(CommonTrip, t);
+            case CRATER_TRIP_LEFT:
+                return getDriveMode(CraterTripLeft, t);
+            case CRATER_TRIP_CENTER:
+                return getDriveMode(CraterTripCenter, t);
+            case CRATER_TRIP_RIGHT:
+                return getDriveMode(CraterTripRight, t);
+            case CRATER_TRIP_LEFT_SHORT:
+                return getDriveMode(CraterTripLeftShort, t);
+            case CRATER_TRIP_CENTER_SHORT:
+                return getDriveMode(CraterTripCenterShort, t);
+            case CRATER_TRIP_RIGHT_SHORT:
+                return getDriveMode(CraterTripRightShort, t);
+            case DEPOT_TRIP_LEFT:
+                return getDriveMode(DepotTripLeft, t);
+            case DEPOT_TRIP_CENTER:
+                return getDriveMode(DepotTripCenter, t);
+            case DEPOT_TRIP_RIGHT:
+                return getDriveMode(DepotTripRight, t);
+            case DEPOT_TRIP_LEFT_SHORT:
+                return getDriveMode(DepotTripLeftShort, t);
+            case DEPOT_TRIP_CENTER_SHORT:
+                return getDriveMode(DepotTripCenterShort, t);
+            case DEPOT_TRIP_RIGHT_SHORT:
+                return getDriveMode(DepotTripRightShort, t);
+            default:  // NO_TRIP
+                break;
         }
+
+        return getDriveMode(NoTrip, t);
     }
 
     /// Define blue trip
