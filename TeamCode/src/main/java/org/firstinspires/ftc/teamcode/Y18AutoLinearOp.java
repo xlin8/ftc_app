@@ -116,9 +116,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            2.5, DRIVE_MINERAL_DETECTION,
-            1.0, DRIVE_LANDING,
-            1.5, DRIVE_PULL_PIN,
+            // 2.5, DRIVE_MINERAL_DETECTION,
+            // 1.0, DRIVE_LANDING,
+            // 1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
             60.0, DRIVE_STOP
     };
@@ -167,20 +167,68 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
     static final double [] CraterTripRight = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.17, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            35, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.35, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            110, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.6, DRIVE_SHIFT_GEAR,
+            1.33, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            58, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.3, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_DROP_MARKER,
+            //10, DRIVE_TURN_LEFT_ENC,
+            //0.1, DRIVE_RESET_ENC_DONE,
+            //1.9, DRIVE_BACKWARD_ENC,
+            //0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
+
     static final double [] CraterTripLeftShort = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            35, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.71, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.08, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
+
     static final double [] CraterTripCenterShort = {
             0.1, DRIVE_RESET_ENC_DONE,
-            60.0, DRIVE_STOP
-    };
-    static final double [] CraterTripRightShort = {
+            0.9, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.07, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
+
+    static final double [] CraterTripRightShort = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.17, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.05, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            12, DRIVE_TURN_LEFT_ENC,
+            0.05, DRIVE_FORWARD_ENC,
+            60.0, DRIVE_STOP
+    };
+
     static final double [] DepotTripLeft = {
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  */
 
 @Autonomous(name="PosDepot2", group="GG")
-//@Disabled
+@Disabled
 public class Y18AutoPosDepot2 extends Y18Auto
 {
 

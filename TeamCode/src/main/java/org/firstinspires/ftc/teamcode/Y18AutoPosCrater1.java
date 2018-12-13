@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  */
 
 @Autonomous(name="PosCrater1", group="GG")
-//@Disabled
+@Disabled
 public class Y18AutoPosCrater1 extends Y18Auto
 {
 
