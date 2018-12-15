@@ -69,7 +69,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_INTAKE_SERVOS = true;
     static final double INTAKE_POWER_BRAKE = CR_SERVO_STOP;
 
-    // Dumping servos
+    // Dumping servo
     Servo servoDump_;
     static final boolean USE_SERVO_DUMP = true;
     static final double DUMP_UP = 0.45;
@@ -77,10 +77,12 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double DUNP_INIT_POSITION = DUMP_UP;
 
     // Team marker servo
+    /*
     Servo servoMarker_;
     static final boolean USE_SERVO_MARKER = true;
     static final double MARKER_UP_POS_ = 0.7;
     static final double MARKER_DROP_POS_ = 0.0;
+    */
 
     // Front linear slide
     DcMotor motorMineralLift_;
@@ -143,10 +145,12 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             servoDump_.setPosition(DUNP_INIT_POSITION);
         }
 
+        /*
         if (USE_SERVO_MARKER) {
             servoMarker_ = hardwareMap.servo.get("servo_marker_");
             servoMarker_.setPosition(MARKER_UP_POS_);
         }
+        */
 
         if (USE_LIFT) {
             motorLift_ = hardwareMap.dcMotor.get("motor6");

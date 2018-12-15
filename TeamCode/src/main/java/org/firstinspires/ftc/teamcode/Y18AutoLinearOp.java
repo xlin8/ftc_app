@@ -118,9 +118,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            // 2.5, DRIVE_MINERAL_DETECTION,
-            // 1.0, DRIVE_LANDING,
-            // 1.5, DRIVE_PULL_PIN,
+            2.5, DRIVE_MINERAL_DETECTION,
+            1.0, DRIVE_LANDING,
+            1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
             60.0, DRIVE_STOP
     };
@@ -130,11 +130,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             35, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.6, DRIVE_FORWARD_ENC,
+            0.65, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.37, DRIVE_BACKWARD_ENC,
+            0.42, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            40, DRIVE_TURN_LEFT_ENC,
+            41, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.92, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -149,11 +149,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
     static final double [] CraterTripCenter = {
             0.1, DRIVE_RESET_ENC_DONE,
-            0.8, DRIVE_FORWARD_ENC,
+            0.85, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.37, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            80, DRIVE_TURN_LEFT_ENC,
+            78, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -173,24 +173,22 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             35, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.6, DRIVE_FORWARD_ENC,
+            0.65, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.35, DRIVE_BACKWARD_ENC,
+            0.40, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             110, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.6, DRIVE_SHIFT_GEAR,
+            1.65, DRIVE_SHIFT_GEAR,
             1.33, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            58, DRIVE_TURN_LEFT_ENC,
+            60, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            //10, DRIVE_TURN_LEFT_ENC,
-            //0.1, DRIVE_RESET_ENC_DONE,
-            //1.9, DRIVE_BACKWARD_ENC,
-            //0.1, DRIVE_RESET_ENC_DONE,
+            1.9, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
 
@@ -202,8 +200,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.71, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.08, DRIVE_BACKWARD_ENC,
-            0.1, DRIVE_BACKWARD_ENC,
+            0.05, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            10, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.03, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
 
@@ -212,6 +214,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.9, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.07, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            15, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -227,7 +231,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.05, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             12, DRIVE_TURN_LEFT_ENC,
-            0.05, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_FORWARD_ENC,
             60.0, DRIVE_STOP
     };
 
@@ -977,7 +981,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                                           double time) {
         double period = Math.abs(states[currStateId_ * 2]);
         if ((time - currStateStartTime_) <= period) {
-            servoMarker_.setPosition(MARKER_DROP_POS_);
+            servoDump_.setPosition(DUMP_DOWN);
             return DRIVE_DROP_MARKER;
         }
 
