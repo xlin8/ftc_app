@@ -251,6 +251,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_DROP_MARKER,
             1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
             0.1, DRIVE_RESET_ENC_DONE,
+            5, DRIVE_TURN_RIGHT_ENC,                    // aditi Dec 14th, 2018
+            0.1, DRIVE_RESET_ENC_DONE,
             1.75, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
@@ -262,7 +264,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             // 0.05, DRIVE_BACKWARD_ENC,
             45, DRIVE_TURN_RIGHT_ENC,
             1.5, DRIVE_SHIFT_GEAR,
-            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_RESET_ENC_DONE,                                // aditi Dec 14th, 2018
             2.3, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
@@ -276,15 +278,20 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             53, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.6, DRIVE_FORWARD_ENC,
+            1.05, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             // 0.05, DRIVE_BACKWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
-            32, DRIVE_TURN_RIGHT_ENC,            //todo : check angle, drop marker or turn first?
-
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.05, DRIVE_BACKWARD_ENC,
+            80, DRIVE_TURN_LEFT_ENC,            //todo : check angle, drop marker or turn first?
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.8, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            20, DRIVE_TURN_LEFT_ENC,
             1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
             0.1, DRIVE_RESET_ENC_DONE,
-            1.75, DRIVE_BACKWARD_ENC,
+            1.6, DRIVE_FORWARD_ENC,
 
             60.0, DRIVE_STOP
     };
@@ -302,6 +309,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             // 0.05, DRIVE_BACKWARD_ENC,
             32, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_BACKWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
             60.0, DRIVE_STOP
     };
@@ -309,10 +318,27 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.55, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripRightShort = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            32, DRIVE_TURN_LEFT_ENC,
+            1.0, DRIVE_DROP_MARKER,0.1,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
     static final double [] NoTrip = {
