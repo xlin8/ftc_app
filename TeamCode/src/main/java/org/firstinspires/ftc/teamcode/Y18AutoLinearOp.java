@@ -21,6 +21,8 @@ import java.lang.Math;
 import java.util.List;
 import java.util.Locale;
 
+// todo : search : Aditi
+
 ///  Autonomous Run for League Meet0
 @Autonomous(name="Y18AutoLinearOp", group="GG")
 // @Disabled
@@ -60,9 +62,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
     /// Power for drive and turn, need be tuned for each robot
-    static final double DRIVE_ENC_WHEEL_POWER = 0.50;       // default driving power using encoder; ~29sec for 6*3m, for 2017
+    static final double DRIVE_ENC_WHEEL_POWER = 0.50;       // default driving power using encoder; ~29sec for 6*3m, for 2017       //was 0.4 Aditi Dec 9th 2018
     static final double DRIVE_ENC_SLOW_WHEEL_POWER = 0.15;  // power for encoder based slow drive for STOP_WHITE
-    static final double DRIVE_ENC_TURN_WHEEL_POWER = 0.20;  // default turning power using encoder, 2017/09/08
+    static final double DRIVE_ENC_TURN_WHEEL_POWER = 0.20;  // default turning power using encoder, 2017/09/08          //was 0.12 Aditi Dec 9th 2018
     static final double DRIVE_WHEEL_POWER = 0.20;           // default driving power
     static final double TURN_WHEEL_POWER = 0.20;            // default turning power
     static final double TURN_SLOW_WHEEL_POWER = 0.15;       // slow turning power
@@ -79,7 +81,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double MAX_WALL_DISTANCE = 17.5;           // max distance to wall; distance higher than this will trigger re-alignment
     static final double MAX_DISTANCE_RANGE = 99.9;          // any distance larger than this value will be consider as invalid reading
     static final double SEE_WALL_DISTANCE = 100.0;          // wall distance to stop
-    
+
     // Mineral detector
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
@@ -230,23 +232,79 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
 
     static final double [] DepotTripLeft = {
+            0.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            32, DRIVE_TURN_RIGHT_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.75, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripCenter = {
             0.1, DRIVE_RESET_ENC_DONE,
+            1.7, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_ENC_DONE,                                 // added by Aditi Dec 9th, 2018
+            // 0.05, DRIVE_BACKWARD_ENC,
+            45, DRIVE_TURN_RIGHT_ENC,
+            1.5, DRIVE_SHIFT_GEAR,
+            0.1, DRIVE_RESET_ENC_DONE,
+            2.3, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripRight = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            32, DRIVE_TURN_RIGHT_ENC,            //todo : check angle, drop marker or turn first?
+
+            1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.75, DRIVE_BACKWARD_ENC,
+
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripLeftShort = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            32, DRIVE_TURN_RIGHT_ENC,
+            1.0, DRIVE_DROP_MARKER,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripCenterShort = {
             0.1, DRIVE_RESET_ENC_DONE,
+            1.55, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripRightShort = {
@@ -318,7 +376,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 if (DETECT_GOLD_MINERAL_BEFORE_START) {
                     // Detect gold mineral position before pushing the START buton
                     if (tfod_ != null) tfod_.activate();
-
                     detectGoldMineralPosition(timer_.time(), 10.0);
                 }
             } else {
@@ -828,7 +885,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         // if (numDistOk_ >= numDistFar_) { // distance is OK, skip re-alignment
         //   currStateId_ += 8;
         // }
- 
+
         return gotoNextState(states, time, true);
     }
 
