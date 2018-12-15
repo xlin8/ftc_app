@@ -157,13 +157,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            43, DRIVE_TURN_LEFT_ENC,
+            45, DRIVE_TURN_LEFT_ENC,
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.85, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            1.8, DRIVE_BACKWARD_ENC,
+            1.75, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
