@@ -136,14 +136,14 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             41, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.92, DRIVE_FORWARD_ENC,
+            1.05, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             55, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
-            1.3, DRIVE_FORWARD_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
+            1.22, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_ENC_DONE,
             1.87, DRIVE_BACKWARD_ENC,
             60.0, DRIVE_STOP
     };
@@ -155,7 +155,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             78, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.5, DRIVE_FORWARD_ENC,
+            1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             43, DRIVE_TURN_LEFT_ENC,
             1.5, DRIVE_SHIFT_GEAR,
@@ -163,7 +163,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.85, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            1.9, DRIVE_BACKWARD_ENC,
+            1.8, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -408,13 +408,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         // Activate Tensor Flow Object Detection.
         if (DETECT_GOLD_MINERAL_BEFORE_START == false) {
-           if (tfod_ != null) tfod_.activate();
+            if (tfod_ != null) tfod_.activate();
         }
     }
 
     void cleanUpAtEndOfRun() {
        if (tfod_ != null) {
-            tfod_.shutdown();
+           tfod_.shutdown();
        }
     }
 
