@@ -21,6 +21,8 @@ import java.lang.Math;
 import java.util.List;
 import java.util.Locale;
 
+// todo : search : Aditi
+
 ///  Autonomous Run for League Meet0
 @Autonomous(name="Y18AutoLinearOp", group="GG")
 // @Disabled
@@ -116,9 +118,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            2.5, DRIVE_MINERAL_DETECTION,
-            1.0, DRIVE_LANDING,
-            1.5, DRIVE_PULL_PIN,
+            // 2.5, DRIVE_MINERAL_DETECTION,
+            // 1.0, DRIVE_LANDING,     //were disabled by Aditi Dec 12th, 2018 for testing purposes
+            // 1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
             60.0, DRIVE_STOP
     };
@@ -181,7 +183,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
-    static final double [] DepotTripLeft = {
+    static final double [] DepotTripLeft = {                                     // Aditi
             0.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             40, DRIVE_TURN_LEFT_ENC,
@@ -191,7 +193,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             53, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.6, DRIVE_FORWARD_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
             0.1, DRIVE_RESET_ENC_DONE,
             // 0.05, DRIVE_BACKWARD_ENC,
             32, DRIVE_TURN_RIGHT_ENC,
@@ -215,14 +216,47 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
     static final double [] DepotTripRight = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            32, DRIVE_TURN_RIGHT_ENC,            //todo : check angle, drop marker or turn first?
+          /*
+            1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.75, DRIVE_BACKWARD_ENC,
+            */
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripLeftShort = {
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            40, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            53, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            // 0.05, DRIVE_BACKWARD_ENC,
+            32, DRIVE_TURN_RIGHT_ENC,
+            1.0, DRIVE_DROP_MARKER,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripCenterShort = {
             0.1, DRIVE_RESET_ENC_DONE,
+            1.55, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripRightShort = {
@@ -255,7 +289,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     double drivePowerFactor_ = 1.0;                         // factor for drive power
 
     // Detect gold mineral position
-    int goldPosition_ = GOLD_MINERAL_AT_UNKNOWN;
+    int goldPosition_ = GOLD_MINERAL_AT_LEFT;        // todo : change this for default pos.
+    // todo : was : int goldPosition_ = GOLD_MINERAL_AT_UNKNOWN;        // Aditi Dec 12th, 2018
     boolean isGuessedGoldPosition_ = false;
 
     boolean isCraterTripFlag_= true;                       // If true, it is trip starting from crater. Otherwise, it is trip starting from depot.
