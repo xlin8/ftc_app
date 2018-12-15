@@ -44,7 +44,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-@TeleOp(name = " Y18 TensorFlow Object Detection", group = "Concept")
+@TeleOp(name = "Y18 TensorFlow Object Detection", group = "Concept")
 // @Disabled
 public class Y18ConceptTensorFlowObjectDetection extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
@@ -100,7 +100,7 @@ public class Y18ConceptTensorFlowObjectDetection extends LinearOpMode {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CameraDirection.BACK;
+        parameters.cameraDirection = CameraDirection.FRONT;
 
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
