@@ -5,21 +5,17 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
-import java.lang.Math;
 import java.util.List;
-import java.util.Locale;
 
 // todo : search : Aditi
 
@@ -54,7 +50,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int DRIVE_PULL_PIN = 22;
     static final int DRIVE_DROP_MARKER = 23;
     static final int DRIVE_MINERAL_DETECTION = 24;
-    static final int DRIVE_MODE_NUM = 25;                   // total number of modes
+    static final int DRIVE_SHIFT_LEFT_ENC = 25;                 // shift left using Mecanum wheels based on time
+    static final int DRIVE_SHIFT_RIGHT_ENC = 26;                // shift right using Mecanum wheels based on time
+    static final int DRIVE_MODE_NUM = 27;                   // total number of modes
 
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
@@ -118,7 +116,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            2.5, DRIVE_MINERAL_DETECTION,
+            5.0, DRIVE_MINERAL_DETECTION,
             1.0, DRIVE_LANDING,
             1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
@@ -140,6 +138,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             55, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_SHIFT_RIGHT_ENC,  // align to the wall
+            0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
             1.22, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
@@ -158,6 +158,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             45, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_SHIFT_RIGHT_ENC,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_FORWARD_ENC,
@@ -183,6 +185,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.33, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_SHIFT_RIGHT_ENC,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -506,6 +510,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
             power_lb = power_lf;
             power_rb = power_rf;
+
+            if( drive_mode==DRIVE_SHIFT_LEFT_ENC || drive_mode==DRIVE_SHIFT_RIGHT_ENC ) {
+               // sidewalk only, front wheels have same power, back wheels have reverse power 
+               power_rf = power_lf;
+               power_rb = -power_lf;
+               power_lb = -power_lf;
+            }
         }
 
         /// Set power values for all wheel motors
@@ -604,6 +615,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return DRIVE_ENC_TURN_WHEEL_POWER;
             case DRIVE_CHECK_DISTANCE:
                 return 0.0;
+            case DRIVE_SHIFT_LEFT_ENC:
+                return (-3.0*DRIVE_ENC_SLOW_WHEEL_POWER);
+            case DRIVE_SHIFT_RIGHT_ENC:
+                return (3.0*DRIVE_ENC_SLOW_WHEEL_POWER);
             default:
                 break;
         }
@@ -766,6 +781,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                        case DRIVE_BACKWARD_ENC_SLOW:
                        case DRIVE_FORWARD_ENC_TO_WALL:
                        case DRIVE_BACKWARD_ENC_TO_WALL:
+                       case DRIVE_SHIFT_LEFT_ENC:
+                       case DRIVE_SHIFT_RIGHT_ENC:
                           return getDriveModeWhenAtDriveUsingEncoder(mode, states, time);
                        default:
                           break;
@@ -795,6 +812,17 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             }
 
             return  DRIVE_RESET_ENC_DONE;
+        }
+
+        // time-based SHIFT_LEFT and SHIFT_RIGHT
+        if( curr_mode==DRIVE_SHIFT_LEFT_ENC || curr_mode==DRIVE_SHIFT_RIGHT_ENC ) {
+            runUsingEncoders();
+            double period = Math.abs( states[currStateId_ * 2] );
+            if ((time - currStateStartTime_) <= period){
+                return curr_mode;
+            }
+            targetHeading_ = getHeading();   // reset target heading after aligning to wall
+            return gotoNextState(states, time, /*reset_encoders*/true);
         }
 
         // driving using encoders
