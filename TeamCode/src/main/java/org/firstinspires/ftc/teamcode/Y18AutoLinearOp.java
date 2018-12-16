@@ -39,20 +39,22 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int DRIVE_TURN_RIGHT = 11;                 // turn right till timeout
     static final int DRIVE_TURN_TO_RIGHT = 12;              // turn right to a specified heading based on gyro
     static final int DRIVE_TURN_RIGHT_ENC = 13;             // turn right for a given degree based on encoders
-    static final int DRIVE_FORWARD_ENC_TO_WALL = 14;        // go forward to approach to the wall
-    static final int DRIVE_BACKWARD_ENC_TO_WALL = 15;       // go backward to approach to the wall
-    static final int DRIVE_CHECK_DISTANCE = 16;
-    static final int DRIVE_WAIT_TILL = 17;                  // wait till a time is reached
-    static final int DRIVE_STATE_JUMP = 18;                 // state jump
-    static final int DRIVE_SHIFT_GEAR = 19;                 // shift gears to make robot move faster/slower by changing drivePowerFactor_
-    static final int DRIVE_CHANGE_TRIP = 20;                // Change the trip name and use the task list in the new trip
-    static final int DRIVE_LANDING = 21;                    //for landing the robot
-    static final int DRIVE_PULL_PIN = 22;
-    static final int DRIVE_DROP_MARKER = 23;
-    static final int DRIVE_MINERAL_DETECTION = 24;
-    static final int DRIVE_SHIFT_LEFT_ENC = 25;                 // shift left using Mecanum wheels based on time
-    static final int DRIVE_SHIFT_RIGHT_ENC = 26;                // shift right using Mecanum wheels based on time
-    static final int DRIVE_MODE_NUM = 27;                   // total number of modes
+    static final int DRIVE_SHIFT_LEFT = 14;                 // shift left till timeout
+    static final int DRIVE_SHIFT_LEFT_ENC = 15;             // shift left using Mecanum wheels based on time
+    static final int DRIVE_SHIFT_RIGHT = 16;                // shift right till timeout
+    static final int DRIVE_SHIFT_RIGHT_ENC = 17;            // shift right using Mecanum wheels based on time
+    static final int DRIVE_FORWARD_ENC_TO_WALL = 18;        // go forward to approach to the wall
+    static final int DRIVE_BACKWARD_ENC_TO_WALL = 19;       // go backward to approach to the wall
+    static final int DRIVE_CHECK_DISTANCE = 20;
+    static final int DRIVE_WAIT_TILL = 21;                  // wait till a time is reached
+    static final int DRIVE_STATE_JUMP = 22;                 // state jump
+    static final int DRIVE_SHIFT_GEAR = 23;                 // shift gears to make robot move faster/slower by changing drivePowerFactor_
+    static final int DRIVE_CHANGE_TRIP = 24;                // Change the trip name and use the task list in the new trip
+    static final int DRIVE_LANDING = 25;                    //for landing the robot
+    static final int DRIVE_PULL_PIN = 26;
+    static final int DRIVE_DROP_MARKER = 27;
+    static final int DRIVE_MINERAL_DETECTION = 28;
+    static final int DRIVE_MODE_NUM = 29;                   // total number of modes
 
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
@@ -138,7 +140,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             55, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.0, DRIVE_SHIFT_RIGHT_ENC,  // align to the wall
+            1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
             1.22, DRIVE_FORWARD_ENC,
@@ -159,7 +161,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             45, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.0, DRIVE_SHIFT_RIGHT_ENC,  // align to the wall
+            1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_FORWARD_ENC,
@@ -186,7 +188,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             60, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.0, DRIVE_SHIFT_RIGHT_ENC,  // align to the wall
+            1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -511,11 +513,22 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             power_lb = power_lf;
             power_rb = power_rf;
 
-            if( drive_mode==DRIVE_SHIFT_LEFT_ENC || drive_mode==DRIVE_SHIFT_RIGHT_ENC ) {
-               // sidewalk only, front wheels have same power, back wheels have reverse power 
-               power_rf = power_lf;
-               power_rb = -power_lf;
-               power_lb = -power_lf;
+            switch (drive_mode) {
+                case DRIVE_SHIFT_LEFT:
+                case DRIVE_SHIFT_LEFT_ENC:
+                    power_rb = power_lb;
+                    power_lf = -power_lb;
+                    power_rf = -power_lb;
+                    break;
+                case DRIVE_SHIFT_RIGHT:
+                case DRIVE_SHIFT_RIGHT_ENC:
+                    // front wheels have same power, back wheels have reverse power
+                    power_rf = power_lf;
+                    power_rb = -power_lf;
+                    power_lb = -power_lf;
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -615,8 +628,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return DRIVE_ENC_TURN_WHEEL_POWER;
             case DRIVE_CHECK_DISTANCE:
                 return 0.0;
+            case DRIVE_SHIFT_LEFT:
             case DRIVE_SHIFT_LEFT_ENC:
                 return (-3.0*DRIVE_ENC_SLOW_WHEEL_POWER);
+            case DRIVE_SHIFT_RIGHT:
             case DRIVE_SHIFT_RIGHT_ENC:
                 return (3.0*DRIVE_ENC_SLOW_WHEEL_POWER);
             default:
@@ -751,6 +766,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_TURN_TO_LEFT:
             case DRIVE_TURN_TO_RIGHT:
                 return getDriveModeWhenAtDriveTurn(mode, states, time);
+            case DRIVE_SHIFT_LEFT:
+            case DRIVE_SHIFT_RIGHT:
+                return getDriveModeWhenAtDriveShift(mode, states, time);
             case DRIVE_WAIT_TILL:
                 return getDriveModeWhenAtDriveWaitTill(states, time);
             case DRIVE_CHECK_DISTANCE:
@@ -768,7 +786,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_DROP_MARKER:
                 return getDriveModeWhenAtDriveDropMarker(states, time);
             case DRIVE_MINERAL_DETECTION:
-                return getDriveModeWhenAtDriveMineralDetection(states);
+                return getDriveModeWhenAtDriveMineralDetection(states, time);
             default:
                 if (USE_ENC_FOR_DRIVE) {
                    switch (mode) {
@@ -779,10 +797,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                        case DRIVE_BACKWARD_ENC:
                        case DRIVE_FORWARD_ENC_SLOW:
                        case DRIVE_BACKWARD_ENC_SLOW:
-                       case DRIVE_FORWARD_ENC_TO_WALL:
-                       case DRIVE_BACKWARD_ENC_TO_WALL:
                        case DRIVE_SHIFT_LEFT_ENC:
                        case DRIVE_SHIFT_RIGHT_ENC:
+                       case DRIVE_FORWARD_ENC_TO_WALL:
+                       case DRIVE_BACKWARD_ENC_TO_WALL:
                           return getDriveModeWhenAtDriveUsingEncoder(mode, states, time);
                        default:
                           break;
@@ -811,18 +829,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 resetDriveEncoders();
             }
 
-            return  DRIVE_RESET_ENC_DONE;
-        }
-
-        // time-based SHIFT_LEFT and SHIFT_RIGHT
-        if( curr_mode==DRIVE_SHIFT_LEFT_ENC || curr_mode==DRIVE_SHIFT_RIGHT_ENC ) {
-            runUsingEncoders();
-            double period = Math.abs( states[currStateId_ * 2] );
-            if ((time - currStateStartTime_) <= period){
-                return curr_mode;
-            }
-            targetHeading_ = getHeading();   // reset target heading after aligning to wall
-            return gotoNextState(states, time, /*reset_encoders*/true);
+            return DRIVE_RESET_ENC_DONE;
         }
 
         // driving using encoders
@@ -868,6 +875,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         }
 
         if (haveDriveEncodersReached(tg_enc_cnt, tg_enc_cnt)) {  // reset encoders and go to next state
+            if (curr_mode==DRIVE_SHIFT_LEFT_ENC || curr_mode==DRIVE_SHIFT_RIGHT_ENC) {
+                targetHeading_ = getHeading();   // reset target heading after aligning to wall
+            }
+
             return gotoNextState(states, time, true);
         }
 
@@ -905,6 +916,22 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         }
 
         return curr_mode;
+    }
+
+    int getDriveModeWhenAtDriveShift(int curr_mode,
+                                     double [] states,
+                                     double time) {
+        if (USE_ENC_FOR_DRIVE) {  // disable encoders for gryo based turning
+            runUsingEncoders();  // use encoders for time based drive. Required for SDK 2.2.
+        }
+
+        double period = Math.abs( states[currStateId_ * 2] );
+        if ((time - currStateStartTime_) <= period){
+            return curr_mode;
+        }
+
+        targetHeading_ = getHeading();   // reset target heading after aligning to wall
+        return gotoNextState(states, time, /*reset_encoders*/true);
     }
 
     int getDriveModeWhenAtDriveWaitTill(double [] states,
@@ -1042,10 +1069,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         return gotoNextState(states, time, true);
     }
 
-    int getDriveModeWhenAtDriveMineralDetection(double [] states) {
+    int getDriveModeWhenAtDriveMineralDetection(double [] states,
+                                                double time) {
         double period = Math.abs(states[currStateId_ * 2]);
-        detectGoldMineralPosition(currStateStartTime_, period);
+        detectGoldMineralPosition(time, period);
 
+        time=timer_.time();
         return gotoNextState(states, time, true);
     }
 
@@ -1095,7 +1124,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 break;
         }
 
-        return "NoTip";
+        return "NoTrip";
     }
 
     /// Define red trip
