@@ -118,7 +118,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            5.0, DRIVE_MINERAL_DETECTION,
+            2.5, DRIVE_MINERAL_DETECTION,
             1.0, DRIVE_LANDING,
             1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
@@ -434,6 +434,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     }
 
     void initializeWhenStart() {
+        timer_.reset();
         currTime_ = 0.0;
 
         if (USE_LIFT) motorLift_.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
