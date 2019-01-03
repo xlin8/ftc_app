@@ -20,7 +20,7 @@ import java.util.List;
 // todo : search : Aditi
 
 ///  Autonomous Run for League Meet0
-@Autonomous(name="Y18AutoLinearOp", group="GG")
+@Autonomous(name="Y18Crater", group="GG")
 // @Disabled
 public class Y18AutoLinearOp extends Y18HardwareLinearOp
 {
@@ -146,7 +146,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.22, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_SHIFT_RIGHT,
+            0.1, DRIVE_RESET_ENC_DONE,
             1.87, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
     static final double [] CraterTripCenter = {
@@ -167,6 +170,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
+            0.2, DRIVE_SHIFT_RIGHT,
+            0.1, DRIVE_RESET_ENC_DONE,
             1.75, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
@@ -193,6 +198,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
+            0.2, DRIVE_SHIFT_RIGHT,
+            0.1, DRIVE_RESET_ENC_DONE,
             1.9, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
