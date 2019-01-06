@@ -34,29 +34,38 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-@TeleOp(name = "Y18 TensorFlow Object Detection", group = "Concept")
-@Disabled
-public class Y18ConceptTensorFlowObjectDetection extends LinearOpMode {
+@TeleOp(name = "Y18 TensorFlow Object Detection Webcam", group = "Concept")
+// @Disabled
+public class Y18ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
 
-    private static final String VUFORIA_KEY = "ATbVhA//////AAAAGQpUcoBny0Xdi+FFWntcC3w9C63+hv3ccdXKcUsUhNYtbt8IbpT9SQ+VsthWIyix0rrzYP8KYaSYY5na+nufoGmLQo8vE8CPWmUj8eZcdlM9k4mi8ge0T2uzuoKZmcllal8cM3hRxo1JBFVtavCrgulnZxQ8hMsbzZuA+dZDGQTOEOCCH8ZHuh6wrIUygVerHfrXXlpeIAQvXzBiYrVPetr3zu3ROn6rno75mQ0KCM8Qp87BGS4Orx+GwxL8FlO+EXA3aSBvDh7+a57co5212MkGIRUceXxAd+BfoFjiWg3SbJpVbDM7TcDApVR88jlqeEDmbc/ODajLjEKziycgihi1rpq1lOBys2oJ68qdVrtO";
+    private static final String VUFORIA_KEY = "AS0FKrL/////AAABmTcBCNs1gE8uh4tntGA7HSgXRT5npDQpV2pw5tlqbZCI6WJQRf0bKf458A218bGkQJCWkJzvJy6UtNnhziraRVDDZSnTSZGSD7s3WN9jNYqBiSoO3CVE6FU2dX1yuJNa1zfiEhcGT8ChTd+kucE/q3sXsy/nw1KqlW/7uEaEeRwaCPseqsbNrc1HZ1bi18PzwQpCaypDruqqVEyZ3dvTqDmjPg7WFBe2kStPR/qTtcLSXdE804RxxkgTGUtDMIG7TTbAdirInGVZw2p2APZKAQdYofYW2E0Ss5hZCeL55zflSuQK0QcW1sAyvaTUMd/fDse4FgqxhnfK0ip0Kc+ZqZ6XJpof/Nowwxv3IgDWZJzO";
 
+    private static final int GOLD_MINERAL_AT_LEFT = 0;
+    private static final int GOLD_MINERAL_AT_CENTER = 1;
+    private static final int GOLD_MINERAL_AT_RIGHT = 2;
+    private static final int GOLD_MINERAL_AT_UNKNOWN = 3;
     private static double MIN_MINERAL_HEIGHT_RATIO = 0.6;
     private static double MIN_MINERAL_HEIGHT_WIDTH_RATIO = 0.75;
     private static double MAX_MINERAL_BOTTOM_DIFF_RATIO = 0.4;
 
-    private VuforiaLocalizer vuforia;
+    VuforiaLocalizer vuforia_;
+    WebcamName webcamName_;
 
-    private TFObjectDetector tfod;
+    TFObjectDetector tfod_;
+
+    // Detect gold mineral position
+    int goldPosition_ = GOLD_MINERAL_AT_UNKNOWN;
+    boolean isGuessedGoldPosition_ = false;
 
     @Override
     public void runOpMode() {
@@ -64,57 +73,78 @@ public class Y18ConceptTensorFlowObjectDetection extends LinearOpMode {
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
             initTfod();
+
+            /** Activate Tensor Flow Object Detection. */
+            if (tfod_ != null) {
+                tfod_.activate();
+            }
         } else {
             telemetry.addData("Sorry!", "This device is not compatible with TFOD");
         }
 
         /** Wait for the game to begin */
-        telemetry.addData(">", "Press Play to start tracking");
-        telemetry.update();
         waitForStart();
 
-        if (opModeIsActive()) {
-            /** Activate Tensor Flow Object Detection. */
-            if (tfod != null) {
-                tfod.activate();
-            }
+        telemetry.addData("Start automonous", "(GoldAt="+String.valueOf(goldPosition_)+" IsGuessed="+String.valueOf(isGuessedGoldPosition_)+")");
+        telemetry.update();
+
+        if (tfod_ != null) {
+            tfod_.shutdown();
         }
 
         while (opModeIsActive()) {
-            if (tfod != null) {
-                detectMineralsByTfod();
-            }
-
             idle();
-        }
-
-        if (tfod != null) {
-            tfod.shutdown();
         }
     }
 
-     private void initVuforia() {
+    @Override
+    public synchronized void waitForStart() {
+        while (!isStarted()) {
+            synchronized (this) {
+                try {
+                    int curr_gold_pos = detectMineralsByTfod();
+                    if (curr_gold_pos != GOLD_MINERAL_AT_UNKNOWN) {
+                        goldPosition_ = curr_gold_pos;
+                        isGuessedGoldPosition_ = false;
+                    }
+
+                    this.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
+
+    private void initVuforia() {
+        webcamName_ = hardwareMap.get(WebcamName.class, "Webcam");
+
+        // int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CameraDirection.FRONT;
+        parameters.cameraName = webcamName_;
 
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
+        vuforia_ = ClassFactory.getInstance().createVuforia(parameters);
     }
 
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+        tfod_ = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia_);
+        tfod_.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 
-    private void detectMineralsByTfod() {
+    private int detectMineralsByTfod() {
+        if (tfod_ == null) return GOLD_MINERAL_AT_UNKNOWN;
+
         // getUpdatedRecognitions() will return null if no new information is available since
         // the last time that call was made.
-        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+        List<Recognition> updatedRecognitions = tfod_.getUpdatedRecognitions();
         if (updatedRecognitions != null ) {
             int num_detect_obj = updatedRecognitions.size();
             telemetry.addData("# Object Detected", num_detect_obj);
@@ -228,6 +258,7 @@ public class Y18ConceptTensorFlowObjectDetection extends LinearOpMode {
                             if (is_gold_mineral_flag[0] == false && is_gold_mineral_flag[1] == false) {
                                 telemetry.addData("Gold Mineral Position", "Left (%d, %d, %d) (%d, %d, %d)",
                                         mineral_x[0], mineral_y[0], mineral_height[0], mineral_x[1], mineral_y[1], mineral_height[1]);
+                                return GOLD_MINERAL_AT_LEFT;
                             } else {
                                 boolean is_in_center_flag = false;
                                 if (is_gold_mineral_flag[0] == true) {
@@ -239,17 +270,23 @@ public class Y18ConceptTensorFlowObjectDetection extends LinearOpMode {
                                 if (is_in_center_flag == true) {
                                     telemetry.addData("Gold Mineral Position", "Center (%d, %d, %d) (%d, %d, %d)",
                                             mineral_x[0], mineral_y[0], mineral_height[0], mineral_x[1], mineral_y[1], mineral_height[1]);
+                                    return GOLD_MINERAL_AT_CENTER;
                                 } else {
                                     telemetry.addData("Gold Mineral Position", "Right (%d, %d, %d) (%d, %d, %d)",
                                             mineral_x[0], mineral_y[0], mineral_height[0], mineral_x[1], mineral_y[1], mineral_height[1]);
+                                    return GOLD_MINERAL_AT_RIGHT;
                                 }
                            }
                        }
                     }
                 }
             }
+        } else {
+            telemetry.addData("Empty detected object list", "(LastGoldAt="+String.valueOf(goldPosition_)+" IsGuessed="+String.valueOf(isGuessedGoldPosition_)+")");
         }
 
         telemetry.update();
+
+        return GOLD_MINERAL_AT_UNKNOWN;
     }
 }
