@@ -86,7 +86,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
     static final boolean USE_MINERAL_DETECTION = true;
-    static final boolean DETECT_GOLD_MINERAL_BEFORE_START = false;
+    static final boolean DETECT_GOLD_MINERAL_BEFORE_START = true;
     static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     static final String LABEL_SILVER_MINERAL = "Silver Mineral";
@@ -148,7 +148,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.2, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.87, DRIVE_BACKWARD_ENC,
+            1.9, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -172,7 +172,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_DROP_MARKER,
             0.2, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.75, DRIVE_BACKWARD_ENC,
+            1.8, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -182,7 +182,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             35, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.65, DRIVE_FORWARD_ENC,
+            0.7, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.40, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -195,12 +195,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
-            1.3, DRIVE_FORWARD_ENC,
+            1.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            0.2, DRIVE_SHIFT_RIGHT,
+            0.15, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.8, DRIVE_BACKWARD_ENC,
+            1.9, DRIVE_SHIFT_GEAR,
+            1.9, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -415,9 +416,17 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         initialize();
 
         // Wait for the game to begin
-        telemetry.addData(">", "Press Play to start autonomous " + "(Gold_at="+String.valueOf(goldPosition_)+" is_guessed="+String.valueOf(isGuessedGoldPosition_)+")");
-        telemetry.update();
-        waitForStart();
+        if (DETECT_GOLD_MINERAL_BEFORE_START == true) {
+            detectGoldMinearalAndWaitForStart();
+
+            telemetry.addData("Start automonous", "(GoldAt="+String.valueOf(goldPosition_)+" IsGuessed="+String.valueOf(isGuessedGoldPosition_)+")");
+            telemetry.update();
+        } else {
+            telemetry.addData(">", "Press Play to start autonomous " + "(Gold_at=" + String.valueOf(goldPosition_) + " is_guessed=" + String.valueOf(isGuessedGoldPosition_) + ")");
+            telemetry.update();
+
+            waitForStart();
+        }
 
         initializeWhenStart();
 
@@ -442,7 +451,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 if (DETECT_GOLD_MINERAL_BEFORE_START) {
                     // Detect gold mineral position before pushing the START buton
                     if (tfod_ != null) tfod_.activate();
-                    detectGoldMineralPosition(timer_.time(), 10.0);
                 }
             } else {
                 telemetry.addData("Warn", "This device is not compatible with TFOD");
@@ -463,6 +471,29 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         targetHeading_ = 0.0;
     }
 
+    public synchronized void detectGoldMinearalAndWaitForStart() {
+        while (!isStarted()) {
+            synchronized (this) {
+                try {
+                    int curr_gold_pos = detectGoldMineralsByTfod();
+                    if (curr_gold_pos != GOLD_MINERAL_AT_UNKNOWN) {
+                        goldPosition_ = curr_gold_pos;
+                        isGuessedGoldPosition_ = false;
+
+                        telemetry.addData("At Waiting for Start: ", "Gold At="+String.valueOf(goldPosition_));
+                        telemetry.update();
+                    }
+
+                    this.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
+
+
     void initializeWhenStart() {
         timer_.reset();
         currTime_ = 0.0;
@@ -472,6 +503,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         // Activate Tensor Flow Object Detection.
         if (DETECT_GOLD_MINERAL_BEFORE_START == false) {
             if (tfod_ != null) tfod_.activate();
+        } else if (goldPosition_ != GOLD_MINERAL_AT_UNKNOWN) {
+            if (tfod_ != null) {
+                tfod_.shutdown();
+            }
         }
     }
 
@@ -1102,8 +1137,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     int getDriveModeWhenAtDriveMineralDetection(double [] states,
                                                 double time) {
-        double period = Math.abs(states[currStateId_ * 2]);
-        detectGoldMineralPosition(time, period);
+        if (DETECT_GOLD_MINERAL_BEFORE_START == false ||
+            goldPosition_ == GOLD_MINERAL_AT_UNKNOWN) {
+            double period = Math.abs(states[currStateId_ * 2]);
+            detectGoldMineralPosition(time, period);
+        }
 
         time=timer_.time();
         return gotoNextState(states, time, true);
