@@ -90,7 +90,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-    static final String VUFORIA_KEY = "ATbVhA//////AAAAGQpUcoBny0Xdi+FFWntcC3w9C63+hv3ccdXKcUsUhNYtbt8IbpT9SQ+VsthWIyix0rrzYP8KYaSYY5na+nufoGmLQo8vE8CPWmUj8eZcdlM9k4mi8ge0T2uzuoKZmcllal8cM3hRxo1JBFVtavCrgulnZxQ8hMsbzZuA+dZDGQTOEOCCH8ZHuh6wrIUygVerHfrXXlpeIAQvXzBiYrVPetr3zu3ROn6rno75mQ0KCM8Qp87BGS4Orx+GwxL8FlO+EXA3aSBvDh7+a57co5212MkGIRUceXxAd+BfoFjiWg3SbJpVbDM7TcDApVR88jlqeEDmbc/ODajLjEKziycgihi1rpq1lOBys2oJ68qdVrtO";
+    static final String VUFORIA_KEY = "AS0FKrL/////AAABmTcBCNs1gE8uh4tntGA7HSgXRT5npDQpV2pw5tlqbZCI6WJQRf0bKf458A218bGkQJCWkJzvJy6UtNnhziraRVDDZSnTSZGSD7s3WN9jNYqBiSoO3CVE6FU2dX1yuJNa1zfiEhcGT8ChTd+kucE/q3sXsy/nw1KqlW/7uEaEeRwaCPseqsbNrc1HZ1bi18PzwQpCaypDruqqVEyZ3dvTqDmjPg7WFBe2kStPR/qTtcLSXdE804RxxkgTGUtDMIG7TTbAdirInGVZw2p2APZKAQdYofYW2E0Ss5hZCeL55zflSuQK0QcW1sAyvaTUMd/fDse4FgqxhnfK0ip0Kc+ZqZ6XJpof/Nowwxv3IgDWZJzO";
     static final int MAX_TIMES_DETECT_GOLD_MINERAL = 3;
     static final int GOLD_MINERAL_AT_LEFT = 0;
     static final int GOLD_MINERAL_AT_CENTER = 1;
@@ -113,15 +113,17 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int DEPOT_TRIP_LEFT_SHORT = 10;
     static final int DEPOT_TRIP_CENTER_SHORT = 11;
     static final int DEPOT_TRIP_RIGHT_SHORT = 12;
-    static final int NO_TRIP = 13;
-    static final int NUM_TRIPS = 14;
+    static final int CRATER_TRIP_LEFT_DOUBLE_SAMPLE = 13;
+    static final int CRATER_TRIP_LEFT_SINGLE_SAMPLE = 14;
+    static final int NO_TRIP = 15;
+    static final int NUM_TRIPS = 16;
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
             2.5, DRIVE_MINERAL_DETECTION,
             1.0, DRIVE_LANDING,
             1.5, DRIVE_PULL_PIN,
-            (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP,
+            (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP, // change based on the gold mineral's position
             60.0, DRIVE_STOP
     };
     static final double [] CraterTripLeft = {
@@ -143,6 +145,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
+            (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripLeftSingleSample = {
             1.22, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -150,6 +156,17 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.9, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
+            60.0, DRIVE_STOP
+    };
+    static final double [] CraterTripLeftDoubleSample = {
+            1.35, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            75, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.7, DRIVE_FORWARD_ENC,
             60.0, DRIVE_STOP
     };
     static final double [] CraterTripCenter = {
@@ -408,6 +425,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     boolean isGuessedGoldPosition_ = false;
 
     boolean isCraterTripFlag_= true;                       // If true, it is trip starting from crater. Otherwise, it is trip starting from depot.
+    boolean isCraterDoubleSampleTrip = false;
     boolean isShortTripFlag_ = false;                      // If true, do not deliver the team marker.
     int currTripId_ = 0;
 
@@ -1064,8 +1082,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             switch (goldPosition_) {
                 case GOLD_MINERAL_AT_LEFT:
                     if (isCraterTripFlag_ == true) {
-                        if (isShortTripFlag_ == false) currTripId_ = CRATER_TRIP_LEFT;
-                        else currTripId_ = CRATER_TRIP_LEFT_SHORT;
+                        if (isShortTripFlag_ == true) currTripId_ = CRATER_TRIP_LEFT_SHORT;
+                        else if (currTripId_ != CRATER_TRIP_LEFT) currTripId_ = CRATER_TRIP_LEFT;
+                        else {
+                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_LEFT_SINGLE_SAMPLE;
+                            else currTripId_ = CRATER_TRIP_LEFT_DOUBLE_SAMPLE;
+                        }
                     } else {
                         if (isShortTripFlag_ == false) currTripId_ = DEPOT_TRIP_LEFT;
                         else currTripId_ = DEPOT_TRIP_LEFT_SHORT;
@@ -1167,6 +1189,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return "Common";
             case CRATER_TRIP_LEFT:
                 return "CraterLeft";
+            case CRATER_TRIP_LEFT_DOUBLE_SAMPLE:
+                return "CraterLeftDoubleSample";
+            case CRATER_TRIP_LEFT_SINGLE_SAMPLE:
+                return "CraterLeftSingleSample";
             case CRATER_TRIP_CENTER:
                 return "CraterCenter";
             case CRATER_TRIP_RIGHT:
@@ -1203,6 +1229,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return getDriveMode(CommonTrip, t);
             case CRATER_TRIP_LEFT:
                 return getDriveMode(CraterTripLeft, t);
+            case CRATER_TRIP_LEFT_SINGLE_SAMPLE:
+                return getDriveMode(CraterTripLeftSingleSample, t);
+            case CRATER_TRIP_LEFT_DOUBLE_SAMPLE:
+                return getDriveMode(CraterTripLeftDoubleSample, t);
             case CRATER_TRIP_CENTER:
                 return getDriveMode(CraterTripCenter, t);
             case CRATER_TRIP_RIGHT:
