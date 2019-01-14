@@ -54,7 +54,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int DRIVE_PULL_PIN = 26;
     static final int DRIVE_DROP_MARKER = 27;
     static final int DRIVE_MINERAL_DETECTION = 28;
-    static final int DRIVE_MODE_NUM = 29;                   // total number of modes
+    static final int DRIVE_FORWARD_ENC_AND_DET_LINE = 29;   // go froward up to depot line and stop when the color sensor detects depot line
+    static final int DRIVE_MODE_NUM = 30;                   // total number of modes
 
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
@@ -259,7 +260,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_DROP_MARKER,
             30, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.5, DRIVE_BACKWARD_ENC,
+            0.65, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -601,6 +602,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                     case DRIVE_FORWARD_ENC_TO_WALL:
                     case DRIVE_BACKWARD_ENC_TO_WALL:
                     case DRIVE_FORWARD_ENC:
+                    case DRIVE_FORWARD_ENC_AND_DET_LINE:
                     case DRIVE_BACKWARD_ENC:
                     case DRIVE_FORWARD_ENC_SLOW:
                     case DRIVE_BACKWARD_ENC_SLOW:
@@ -738,6 +740,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_RESET_ENC_DONE:
                 return 0.0;
             case DRIVE_FORWARD_ENC:
+            case DRIVE_FORWARD_ENC_AND_DET_LINE:
                 return DRIVE_ENC_WHEEL_POWER;
             case DRIVE_FORWARD_ENC_SLOW:
             case DRIVE_FORWARD_ENC_TO_WALL:
@@ -786,6 +789,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_RESET_ENC_DONE:
                 return 0.0;
             case DRIVE_FORWARD_ENC:
+            case DRIVE_FORWARD_ENC_AND_DET_LINE:
                 return (-1.0 * DRIVE_ENC_WHEEL_POWER);
             case DRIVE_FORWARD_ENC_SLOW:
             case DRIVE_FORWARD_ENC_TO_WALL:
@@ -927,6 +931,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                        case DRIVE_FORWARD_ENC_TO_WALL:
                        case DRIVE_BACKWARD_ENC_TO_WALL:
                           return getDriveModeWhenAtDriveUsingEncoder(mode, states, time);
+                       case DRIVE_FORWARD_ENC_AND_DET_LINE:
+                           return getDriveModeWhenAtDriveForwardUsingEncoderAndDetectDepot(mode, states, time);
                        default:
                           break;
                    }
@@ -968,6 +974,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         switch (curr_mode) {
             case DRIVE_BACKWARD_ENC:
             case DRIVE_FORWARD_ENC:
+            case DRIVE_FORWARD_ENC_AND_DET_LINE:
 	        case DRIVE_BACKWARD_ENC_SLOW:
 	        case DRIVE_FORWARD_ENC_SLOW:
 	        case DRIVE_BACKWARD_ENC_TO_WALL:
@@ -1005,6 +1012,44 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             }
 
             return gotoNextState(states, time, true);
+        }
+
+        return curr_mode;
+    }
+
+    int getDriveModeWhenAtDriveForwardUsingEncoderAndDetectDepot(int curr_mode,
+                                                                 double [] states,
+                                                                 double time) {
+        // driving using encoders
+        double tg_enc_cnt = Math.abs(states[currStateId_ * 2]);
+        currStateEncCnt_ = tg_enc_cnt;
+
+        if (tg_enc_cnt == 0.0) {
+            return gotoNextState(states, time, /*reset_encoders*/false);
+        }
+
+        if (tg_enc_cnt < 10.0) {   // treat it as meters, convert it to encoder count
+            tg_enc_cnt = tg_enc_cnt * ENC_DIST_SCALE;
+        }
+
+        runUsingEncoders();
+
+        if (haveDriveEncodersReached(tg_enc_cnt, tg_enc_cnt)) {  // reset encoders and go to next state
+            return gotoNextState(states, time, true);
+        } else if (USE_RGB_FOR_DEPOT_LINE == true) {
+            boolean det_red_or_blue_line_flag = false;
+
+            double red = rev_rgb_range_.red();
+            double blue = rev_rgb_range_.blue();
+            double alpha = rev_rgb_range_.alpha();
+
+            // telemetry.addData("Color", "red="+String.format("%.2f", red)+" blue="+String.format("%.2f", blue) + " alpha="+String.format("%.2f", alpha));
+
+            if (alpha > MIN_RGB_ALPHA) {
+                if ((red > MIN_RBG_COLOR_RATIO * blue) || (blue > MIN_RBG_COLOR_RATIO * red))  {
+                    return gotoNextState(states, time, true);
+                }
+            }
         }
 
         return curr_mode;

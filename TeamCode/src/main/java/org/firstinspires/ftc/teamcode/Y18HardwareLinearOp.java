@@ -99,6 +99,12 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_MR_RANGE = false;             // sensor removed bcz it may cause crash, 2018/01/06
     double mrRangeDist_ = 0.0;
 
+    LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
+    static final boolean USE_RGB_FOR_DEPOT_LINE = true;    // true for detecting depot border before dropping marker
+    static final double MIN_RGB_ALPHA = 10;                // min alpha for RGB color
+    static final double MIN_RBG_COLOR_RATIO = 1.2;
+
+
     @Override
     public void runOpMode() { 
         // Do nothing
@@ -151,6 +157,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             servoMarker_.setPosition(MARKER_UP_POS_);
         }
         */
+
+        if( USE_RGB_FOR_DEPOT_LINE ) {
+            rev_rgb_range_ = hardwareMap.get(LynxI2cColorRangeSensor.class, "rgb_depot_line");
+        }
 
         if (USE_LIFT) {
             motorLift_ = hardwareMap.dcMotor.get("motor6");

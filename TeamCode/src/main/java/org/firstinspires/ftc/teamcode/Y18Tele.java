@@ -68,8 +68,8 @@ public class Y18Tele extends Y18Common
     double motor_winch_enc = 0.0;
 
     //DCmotor - lift for the linear slide at the front, called motorMineralsLift_
-    double MINERALS_LIFT_UP_POWER = 0.75;
-    double MINERALS_LIFT_DOWN_POWER = -0.75;
+    double MINERALS_LIFT_UP_POWER = 1.0;
+    double MINERALS_LIFT_DOWN_POWER = -1.0;
     static final double MAX_MINERALS_LIFT_ENC_COUNT = 1500;
     static final double MIN_MINERALS_LIFT_ENC_COUNT = 0;
     double MINERALS_LIFT_UP_POS = 1150;
