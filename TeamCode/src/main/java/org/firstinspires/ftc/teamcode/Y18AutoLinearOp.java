@@ -150,12 +150,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
+            1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
 
     static final double [] CraterTripLeftSingleSample = {
-            1.22, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
             0.2, DRIVE_SHIFT_RIGHT,
@@ -166,14 +166,15 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
 
     static final double [] CraterTripLeftDoubleSample = {
-            1.35, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_FORWARD_ENC,
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
             0.1, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            75, DRIVE_TURN_LEFT_ENC,
+            81, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.7, DRIVE_FORWARD_ENC,
+            0.75, DRIVE_FORWARD_ENC,
             60.0, DRIVE_STOP
     };
 
@@ -192,26 +193,27 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
 
     static final double [] CraterTripCenterSingleSample = {
-            1.0, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
             0.2, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.8, DRIVE_BACKWARD_ENC,
+            1.75, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
 
     static final double [] CraterTripCenterDoubleSample = {
-            1.15, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.07, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            0.08, DRIVE_BACKWARD_ENC,
+            0.11, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             85, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -238,12 +240,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
+            1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
 
     static final double [] CraterTripRightSingleSample = {
-            1.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
             0.15, DRIVE_SHIFT_RIGHT,
@@ -255,7 +257,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
 
     static final double [] CraterTripRightDoubleSample = {
-            1.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
             30, DRIVE_TURN_RIGHT_ENC,
