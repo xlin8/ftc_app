@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
@@ -1510,7 +1511,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CameraDirection.FRONT;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+        //parameters.cameraDirection = CameraDirection.FRONT;
 
         vuforia_ = ClassFactory.getInstance().createVuforia(parameters);
     }
