@@ -122,10 +122,14 @@ public class Y18Common extends OpMode {
 
     ///Intake extension (continuous servo)
     boolean USE_SERVO_EXTENSION = true;
+    boolean USE_HS785_SERVO_EXTENSION = true;
     Servo servo_extension_;
     double SERVO_EXTENSION_STOP = CR_SERVO_STOP;
     static final double EXTENSION_OUT = 1.0;
     static final double EXTENSION_IN = 0.0;
+    static final double EXTENSION_INIT = 0.0;
+    static final double EXTENSION_MAX = 0.46;  // 20inch range
+    static final double EXTENSION_DUMP = 0.28; // for dumping
 
     /// IMU
     static final boolean USE_IMU  = true;           // use IMU sensor to turn
@@ -232,7 +236,11 @@ public class Y18Common extends OpMode {
 
         if(USE_SERVO_EXTENSION){
             servo_extension_ = hardwareMap.servo.get("servo_extension_");
+	    if( USE_HS785_SERVO_EXTENSION ) {
+		    servo_extension_.setPosition(EXTENSION_INIT);
+	    } else {
             servo_extension_.setPosition(SERVO_EXTENSION_STOP);
+	    }
         }
         power_lift_ = 0.0;
 

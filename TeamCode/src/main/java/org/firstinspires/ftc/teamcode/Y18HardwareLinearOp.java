@@ -102,6 +102,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
     static final boolean USE_RGB_FOR_DEPOT_LINE = true;    // true for detecting depot border before dropping marker
     static final double MIN_RGB_ALPHA = 10;                // min alpha for RGB color
+    static final double MIN_DEPOT_BLUE = 25;
+    static final double MIN_DEPOT_RED = 25;
     static final double MIN_RBG_COLOR_RATIO = 1.2;
 
 

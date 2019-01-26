@@ -1045,9 +1045,14 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             double blue = rev_rgb_range_.blue();
             double alpha = rev_rgb_range_.alpha();
 
-            // telemetry.addData("Color", "red="+String.format("%.2f", red)+" blue="+String.format("%.2f", blue) + " alpha="+String.format("%.2f", alpha));
+            //telemetry.addData("Color", "red="+String.format("%.2f", red)+" blue="+String.format("%.2f", blue) + " alpha="+String.format("%.2f", alpha));
+            //telemetry.update();
 
             if (alpha > MIN_RGB_ALPHA) {
+/*
+                if( red>=MIN_DEPOT_RED || blue>=MIN_DEPOT_BLUE ) {
+                   return gotoNextState(states, time, true);
+                }*/
                 if ((red > MIN_RBG_COLOR_RATIO * blue) || (blue > MIN_RBG_COLOR_RATIO * red))  {
                     return gotoNextState(states, time, true);
                 }

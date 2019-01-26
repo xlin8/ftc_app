@@ -79,6 +79,8 @@ public class Y18Tele extends Y18Common
 
     boolean mineral_lift_auto_up_flag_ = false;
     boolean mineral_lift_auto_down_flag_ = false;
+    boolean mineral_slide_auto_flag_ = false;
+    double  mineral_slide_manual_t_ = 0.0;
     int a2_prev_cnt_ = 0;
     int x2_prev_cnt_ = 0;
 
@@ -400,13 +402,16 @@ public class Y18Tele extends Y18Common
                 manual_flag = true;
                 mineral_lift_auto_up_flag_ = false;
                 mineral_lift_auto_down_flag_ = false;
+                mineral_slide_auto_flag_ = false;
             } else {
                 if (x2_cnt_ != x2_prev_cnt_) {
                     mineral_lift_auto_up_flag_ = true;
                     mineral_lift_auto_down_flag_ = false;
+                    mineral_slide_auto_flag_ = true;
                 } else if (a2_cnt_ != a2_prev_cnt_) {
                     mineral_lift_auto_up_flag_ = false;
                     mineral_lift_auto_down_flag_ = true;
+		    mineral_slide_auto_flag_ = false;
                 }
             }
 
@@ -464,6 +469,7 @@ public class Y18Tele extends Y18Common
             if (gamepad2.right_trigger > 0.5) {
                 mineral_lift_auto_down_flag_ = false;
                 mineral_lift_auto_up_flag_ = false;
+                mineral_slide_auto_flag_ = false;
 
                 y2_cnt_ = 4;
 
@@ -476,8 +482,6 @@ public class Y18Tele extends Y18Common
                 }
             }
 
-            telemetry.addData("Minerals Lift EncPos", ": " + String.valueOf(motorMineralsLift_.getCurrentPosition()) + ", Power=" + String.valueOf(motorMineralsLift_.getPower()));
-            telemetry.addData("Intake Winch EncPos", ": " + String.valueOf(motorWinch_.getCurrentPosition()) + ", Power=" + String.valueOf(motorWinch_.getPower()));
 
             power_motor_winch = Range.clip(power_motor_winch, -1, 1);
             motorWinch_.setPower(power_motor_winch);
@@ -500,7 +504,27 @@ public class Y18Tele extends Y18Common
         }
 
         //extension linear slide servo
-        if (USE_SERVO_EXTENSION){
+	if( USE_HS785_SERVO_EXTENSION && servo_extension_!=null ) {
+        double pos = servo_extension_.getPosition();
+
+	    double tg_pos = pos; 
+        if (gamepad2.right_stick_y > 0.1 ){
+            if( curr_time_>mineral_slide_manual_t_ +0.1) {
+                tg_pos -= 0.02;
+                mineral_slide_manual_t_ = curr_time_;
+            }
+	    } else if (gamepad2.right_stick_y < -0.1 ){
+            if( curr_time_>mineral_slide_manual_t_ +0.1) {
+                tg_pos += 0.02;
+                mineral_slide_manual_t_ = curr_time_;
+            }
+        } else if( mineral_slide_auto_flag_  ) {
+            tg_pos = EXTENSION_DUMP;
+        }
+	    tg_pos = Range.clip(tg_pos, EXTENSION_INIT, EXTENSION_MAX );
+	    servo_extension_.setPosition(tg_pos);
+
+	} else if (USE_SERVO_EXTENSION){
             if(gamepad2.right_stick_y == 0){
                 servo_extension_.setPosition(SERVO_EXTENSION_STOP);
             }else if (gamepad2.right_stick_y > 0){
@@ -511,7 +535,7 @@ public class Y18Tele extends Y18Common
         }
 
         /// Send telemetry data back to driver station for debugging
-        boolean no_msg = false;               // set true to disable all msgs to minimize lagging
+        boolean no_msg = true;               // set true to disable all msgs to minimize lagging
         boolean show_wheel_power = true;
         boolean show_lift_pos = true;
         boolean show_heading = false;
@@ -520,6 +544,11 @@ public class Y18Tele extends Y18Common
 
         if( !no_msg ) {
             telemetry.addData("GiftGears(Y18LM1)", "Team:"+(isRedTeam()?"RED":"BLUE")+", Time:"+String.format("%.2f",curr_time_));
+
+            if(show_lift_pos) {
+                telemetry.addData("Minerals Lift EncPos", ": " + String.valueOf(motorMineralsLift_.getCurrentPosition()) + ", Power=" + String.valueOf(motorMineralsLift_.getPower()));
+                telemetry.addData("Intake Winch EncPos", ": " + String.valueOf(motorWinch_.getCurrentPosition()) + ", Power=" + String.valueOf(motorWinch_.getPower()));
+            }
 
             if( show_wheel_power )  telemetry.addData("WheelPower", "Factor="+String.format("%.2f",drive_power_f)+"LF/RF/LB/RB: " + String.format("%.2f", motorLF_.getPower()) + "/" + String.format("%.2f", motorRF_.getPower()) + "/" + String.format("%.2f", motorLB_.getPower()) + "/" + String.format("%.2f", motorRB_.getPower()));
 
@@ -530,6 +559,7 @@ public class Y18Tele extends Y18Common
             if( show_mr_range && mr_range_!=null ) {
                 telemetry.addData("MRRangeSensor", String.format("ultra/opt/dist=%4d/%.2f/%.2f",mr_range_.rawUltrasonic(),mr_range_.cmOptical(),mr_range_.getDistance(DistanceUnit.CM)));
             }
+	    if( USE_SERVO_EXTENSION && servo_extension_!=null ) telemetry.addData("ExtensionServo", ": "+String.valueOf(servo_extension_.getPosition())); 
         }
 
     }
