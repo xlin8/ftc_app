@@ -1045,10 +1045,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             double blue = rev_rgb_range_.blue();
             double alpha = rev_rgb_range_.alpha();
 
+            double lf_enc = motorLF_.getCurrentPosition();
+            double dist_travelled = lf_enc / tg_enc_cnt ;
+
             //telemetry.addData("Color", "red="+String.format("%.2f", red)+" blue="+String.format("%.2f", blue) + " alpha="+String.format("%.2f", alpha));
             //telemetry.update();
 
-            if (alpha > MIN_RGB_ALPHA) {
+            if (alpha > MIN_RGB_ALPHA && dist_travelled>DETECT_DEPOT_MIN_DIST_RATIO ) {
 /*
                 if( red>=MIN_DEPOT_RED || blue>=MIN_DEPOT_BLUE ) {
                    return gotoNextState(states, time, true);

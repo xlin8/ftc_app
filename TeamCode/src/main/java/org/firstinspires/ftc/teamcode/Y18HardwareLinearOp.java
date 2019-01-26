@@ -105,6 +105,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double MIN_DEPOT_BLUE = 25;
     static final double MIN_DEPOT_RED = 25;
     static final double MIN_RBG_COLOR_RATIO = 1.2;
+    static final double DETECT_DEPOT_MIN_DIST_RATIO = 0.8;
 
 
     @Override
