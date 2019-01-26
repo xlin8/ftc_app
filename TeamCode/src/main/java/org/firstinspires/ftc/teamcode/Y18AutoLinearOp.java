@@ -1046,7 +1046,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             double alpha = rev_rgb_range_.alpha();
 
             double lf_enc = motorLF_.getCurrentPosition();
-            double dist_travelled = lf_enc / tg_enc_cnt ;
+            double dist_travelled = Math.abs( lf_enc / tg_enc_cnt ) ;
 
             //telemetry.addData("Color", "red="+String.format("%.2f", red)+" blue="+String.format("%.2f", blue) + " alpha="+String.format("%.2f", alpha));
             //telemetry.update();
