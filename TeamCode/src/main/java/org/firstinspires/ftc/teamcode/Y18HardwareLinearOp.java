@@ -79,7 +79,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     */
 
     // Front linear slide
-    DcMotor motorMineralFlip_;
+    DcMotor motorMineralFlip1_;
+    DcMotor motorMineralFlip2_;
     static final boolean USE_MINERAL_FLIP = false;
 
     // Intake motor
@@ -87,8 +88,9 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_MOTOR_INTAKE = false;
 
     // motor extention
-    DcMotor motorExtention_;
-    static final boolean USE_EXTENTION_MOTOR = false;
+    Servo servoExtention_;
+    static final boolean USE_EXTENTION = false;
+    static final double SERVO_EXTENTION_INIT_POSITION = 0;
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
@@ -140,8 +142,11 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         motorRB_.setPower(0);
 
         if (USE_MINERAL_FLIP) {
-            motorMineralFlip_ = hardwareMap.dcMotor.get("motorMineralsFlip");
-            motorMineralFlip_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motorMineralFlip1_ = hardwareMap.dcMotor.get("motorMineralsFlip1");
+            motorMineralFlip1_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            motorMineralFlip2_ = hardwareMap.dcMotor.get("motorMineralsFlip2");
+            motorMineralFlip2_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         if (USE_MOTOR_INTAKE){
@@ -149,9 +154,9 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             motorIntake_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-        if (USE_EXTENTION_MOTOR){
-            motorExtention_ = hardwareMap.dcMotor.get("motorExtention");
-            motorExtention_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if (USE_EXTENTION){
+            servoExtention_ = hardwareMap.servo.get("servoExtention");
+            servoExtention_.setPosition(SERVO_EXTENTION_INIT_POSITION);
         }
 
 
