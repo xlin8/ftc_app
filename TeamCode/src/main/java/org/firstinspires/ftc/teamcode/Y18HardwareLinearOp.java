@@ -80,15 +80,15 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     // Front linear slide
     DcMotor motorMineralFlip_;
-    static final boolean USE_MINERAL_LIFT = false;
+    static final boolean USE_MINERAL_FLIP = false;
 
     // Intake motor
     DcMotor motorIntake_;
-    boolean USE_MOTOR_INTAKE = false;
+    static final boolean USE_MOTOR_INTAKE = false;
 
     // motor extention
     DcMotor motorExtention_;
-    boolean USE_EXTENTION_MOTOR = false;
+    static final boolean USE_EXTENTION_MOTOR = false;
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
@@ -139,30 +139,30 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         motorRF_.setPower(0);
         motorRB_.setPower(0);
 
-        if (USE_MINERAL_LIFT) {
-            motorMineralFlip_ = hardwareMap.dcMotor.get("motorMineralsFlip_");
+        if (USE_MINERAL_FLIP) {
+            motorMineralFlip_ = hardwareMap.dcMotor.get("motorMineralsFlip");
             motorMineralFlip_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         if (USE_MOTOR_INTAKE){
-            motorIntake_ = hardwareMap.dcMotor.get("motorIntake_");
+            motorIntake_ = hardwareMap.dcMotor.get("motorIntake");
             motorIntake_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         if (USE_EXTENTION_MOTOR){
-            motorExtention_ = hardwareMap.dcMotor.get("motorExtention_");
+            motorExtention_ = hardwareMap.dcMotor.get("motorExtention");
             motorExtention_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
 
         if (USE_SERVO_DUMP) {
-            servoDump_ = hardwareMap.servo.get("servo_dump_");
+            servoDump_ = hardwareMap.servo.get("servoDump");
             servoDump_.setPosition(DUNP_INIT_POSITION);
         }
 
         /*
         if (USE_SERVO_MARKER) {
-            servoMarker_ = hardwareMap.servo.get("servo_marker_");
+            servoMarker_ = hardwareMap.servo.get("servoMarker");
             servoMarker_.setPosition(MARKER_UP_POS_);
         }
         */
@@ -172,11 +172,11 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         }
 
         if (USE_LIFT) {
-            motorLift_ = hardwareMap.dcMotor.get("motor6");
+            motorLift_ = hardwareMap.dcMotor.get("motorLift");
             motorLift_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             liftPower_ = 0.0;
 
-            servoLiftPin_ = hardwareMap.servo.get("servo_lift_pin_");
+            servoLiftPin_ = hardwareMap.servo.get("servoLiftPin");
             servoLiftPinPos_ = LIFT_PIN_STOP;
             servoLiftPin_.setPosition(servoLiftPinPos_);
         }
