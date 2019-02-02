@@ -56,8 +56,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     // Lift pin servo
     Servo  servoLiftPin_;                                 // Servo for lift pin
-    static final double  LIFT_PIN_INIT_POS = 0.1;
-    static final double  LIFT_PIN_PULL_POS = 0.8;
+    static final double  LIFT_PIN_INIT_POS = 0.0;
+    static final double  LIFT_PIN_PULL_POS = 0.75;
     double servoLiftPinPos_ = LIFT_PIN_INIT_POS; // Lift pin servo position
     static final boolean USE_SERVO_LIFT_PIN = true;
 
