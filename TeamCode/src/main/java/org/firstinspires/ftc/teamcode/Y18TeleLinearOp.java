@@ -86,7 +86,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             motorRB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
 
-
+        if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     void initializeWhenStart() {
@@ -98,7 +98,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         motorRF_.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRB_.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        
+        if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
     }
 
     void cleanUpAtEndOfRun() {
@@ -113,6 +113,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
         applyWheelPower();
 
+        pullLiftPin();
+
+        driveLiftMotor();
     }
 
     void checkPressedButton(int pad_id) {
@@ -338,6 +341,28 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
         dScale *= ENCODER_MAX_ROTATE_POWER;
         return dScale;
+    }
+
+    void pullLiftPin() {
+        if (USE_SERVO_LIFT_PIN) {
+            if (gamepad1.left_trigger > 0.0) {
+                servoLiftPinPos_ = LIFT_PIN_PULL_POS;
+                servoLiftPin_.setPosition(servoLiftPinPos_);
+            }
+        }
+    }
+
+    void driveLiftMotor() {
+        if (USE_LIFT) {
+            liftPower_ = 0.0;
+
+            if (gamepad1.dpad_up || gamepad2.dpad_up) { // raise lift
+                liftPower_ = LIFT_UP_POWER;
+            } else if (gamepad1.dpad_down || gamepad2.dpad_down) {  // lower lift
+                liftPower_ = LIFT_DOWN_POWER;
+            }
+            motorLift_.setPower(liftPower_);
+        }
     }
 }
 

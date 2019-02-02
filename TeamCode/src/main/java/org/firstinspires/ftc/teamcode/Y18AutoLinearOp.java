@@ -1244,7 +1244,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         //use servo to pull pin out of hanger
         double period = Math.abs( states[currStateId_ * 2] );
         if ((time - currStateStartTime_) <= period){
-            servoLiftPin_.setPosition(LIFT_PIN_PULL);
+            servoLiftPin_.setPosition(LIFT_PIN_PULL_POS);
             return DRIVE_PULL_PIN;
         }
 

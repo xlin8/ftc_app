@@ -56,16 +56,17 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     // Lift pin servo
     Servo  servoLiftPin_;                                 // Servo for lift pin
-    static final double  LIFT_PIN_STOP = 1.0;
-    static final double  LIFT_PIN_PULL = 1.0 - LIFT_PIN_STOP;
-    double servoLiftPinPos_ = LIFT_PIN_STOP;             // Lift pin servo position
+    static final double  LIFT_PIN_INIT_POS = 0.1;
+    static final double  LIFT_PIN_PULL_POS = 0.8;
+    double servoLiftPinPos_ = LIFT_PIN_INIT_POS; // Lift pin servo position
+    static final boolean USE_SERVO_LIFT_PIN = true;
 
     // Servo Variables
     static final double CR_SERVO_STOP = 0.5;
 
     // Dumping servo
     Servo servoDump_;
-    static final boolean USE_SERVO_DUMP = true;
+    static final boolean USE_SERVO_DUMP = false;
     static final double DUMP_UP = 0.45;
     static final double DUMP_DOWN = 0;
     static final double DUNP_INIT_POSITION = DUMP_UP;
@@ -104,7 +105,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     double mrRangeDist_ = 0.0;
 
     LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
-    static final boolean USE_RGB_FOR_DEPOT_LINE = true;    // true for detecting depot border before dropping marker
+    static final boolean USE_RGB_FOR_DEPOT_LINE = false;    // true for detecting depot border before dropping marker
     static final double MIN_RGB_ALPHA = 10;                // min alpha for RGB color
     static final double MIN_DEPOT_BLUE = 25;
     static final double MIN_DEPOT_RED = 25;
@@ -180,9 +181,11 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             motorLift_ = hardwareMap.dcMotor.get("motorLift");
             motorLift_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             liftPower_ = 0.0;
+        }
 
+        if (USE_SERVO_LIFT_PIN) {
             servoLiftPin_ = hardwareMap.servo.get("servoLiftPin");
-            servoLiftPinPos_ = LIFT_PIN_STOP;
+            servoLiftPinPos_ = LIFT_PIN_INIT_POS;
             servoLiftPin_.setPosition(servoLiftPinPos_);
         }
 
