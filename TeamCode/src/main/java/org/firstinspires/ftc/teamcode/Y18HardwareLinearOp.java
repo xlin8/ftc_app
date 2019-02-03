@@ -72,12 +72,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double DUNP_INIT_POSITION = DUMP_UP;
 
     // Team marker servo
-    /*
     Servo servoMarker_;
     static final boolean USE_SERVO_MARKER = true;
-    static final double MARKER_UP_POS_ = 0.7;
-    static final double MARKER_DROP_POS_ = 0.0;
-    */
+    static final double MARKER_UP_POS = 0.0;
+    static final double MARKER_DROP_POS = 0.3;
 
     // Front linear slide
     DcMotor motorMineralFlip1_;
@@ -105,7 +103,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     double mrRangeDist_ = 0.0;
 
     LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
-    static final boolean USE_RGB_FOR_DEPOT_LINE = false;    // true for detecting depot border before dropping marker
+    static final boolean USE_RGB_FOR_DEPOT_LINE = true;    // true for detecting depot border before dropping marker
     static final double MIN_RGB_ALPHA = 10;                // min alpha for RGB color
     static final double MIN_DEPOT_BLUE = 25;
     static final double MIN_DEPOT_RED = 25;
@@ -127,10 +125,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         motorRB_ = hardwareMap.dcMotor.get("motor4");
 
         // Reverse motor, required for RevHub
-        motorLF_.setDirection(DcMotor.Direction.REVERSE);
-        motorLB_.setDirection(DcMotor.Direction.REVERSE);
-        motorRF_.setDirection(DcMotor.Direction.REVERSE);
-        motorRB_.setDirection(DcMotor.Direction.REVERSE);
+        //motorLF_.setDirection(DcMotor.Direction.REVERSE);
+        //motorLB_.setDirection(DcMotor.Direction.REVERSE);
+        //motorRF_.setDirection(DcMotor.Direction.REVERSE);
+        //motorRB_.setDirection(DcMotor.Direction.REVERSE);
 
         motorLF_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorLB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -166,12 +164,12 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             servoDump_.setPosition(DUNP_INIT_POSITION);
         }
 
-        /*
+
         if (USE_SERVO_MARKER) {
             servoMarker_ = hardwareMap.servo.get("servoMarker");
-            servoMarker_.setPosition(MARKER_UP_POS_);
+            servoMarker_.setPosition(MARKER_UP_POS);
         }
-        */
+
 
         if( USE_RGB_FOR_DEPOT_LINE ) {
             rev_rgb_range_ = hardwareMap.get(LynxI2cColorRangeSensor.class, "rgb_depot_line");
