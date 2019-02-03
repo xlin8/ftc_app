@@ -7,6 +7,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -31,7 +32,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /// TeleOp Run for League Meet 2
 @TeleOp(name="Y18Tele", group="GG")
-//@Disabled
+@Disabled
 public class Y18Tele extends Y18Common
 {
 
