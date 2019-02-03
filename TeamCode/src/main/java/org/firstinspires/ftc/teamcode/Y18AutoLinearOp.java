@@ -87,7 +87,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     // Mineral detector
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
-    static final boolean USE_MINERAL_DETECTION = false;
+    static final boolean USE_MINERAL_DETECTION = true;
     static final boolean DETECT_GOLD_MINERAL_BEFORE_START = true;
     static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     static final String LABEL_GOLD_MINERAL = "Gold Mineral";
@@ -181,7 +181,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CraterTripCenter = {
             0.1, DRIVE_RESET_ENC_DONE,
-            0.85, DRIVE_FORWARD_ENC,
+            0.65, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.37, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -194,7 +194,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            0.9, DRIVE_FORWARD_ENC_AND_DET_LINE,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -204,7 +204,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_DROP_MARKER,
             0.2, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.75, DRIVE_BACKWARD_ENC,
+            1.7, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
