@@ -74,8 +74,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // Team marker servo
     Servo servoMarker_;
     static final boolean USE_SERVO_MARKER = true;
-    static final double MARKER_UP_POS = 0.0;
-    static final double MARKER_DROP_POS = 0.3;
+    static final double MARKER_UP_POS = 0.5;
+    static final double MARKER_DROP_POS = 0.2;
 
     // Front linear slide
     DcMotor motorMineralFlip1_;
@@ -103,7 +103,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     double mrRangeDist_ = 0.0;
 
     LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
-    static final boolean USE_RGB_FOR_DEPOT_LINE = true;    // true for detecting depot border before dropping marker
+    static final boolean USE_RGB_FOR_DEPOT_LINE = false;    // true for detecting depot border before dropping marker
     static final double MIN_RGB_ALPHA = 10;                // min alpha for RGB color
     static final double MIN_DEPOT_BLUE = 25;
     static final double MIN_DEPOT_RED = 25;

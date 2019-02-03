@@ -64,16 +64,16 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
     /// Power for drive and turn, need be tuned for each robot
-    static final double DRIVE_ENC_WHEEL_POWER = 0.50;       // default driving power using encoder; ~29sec for 6*3m, for 2017       //was 0.4 Aditi Dec 9th 2018
+    static final double DRIVE_ENC_WHEEL_POWER = 0.40;       // default driving power using encoder; ~29sec for 6*3m, for 2017       //was 0.4 Aditi Dec 9th 2018
     static final double DRIVE_ENC_SLOW_WHEEL_POWER = 0.15;  // power for encoder based slow drive for STOP_WHITE
-    static final double DRIVE_ENC_TURN_WHEEL_POWER = 0.20;  // default turning power using encoder, 2017/09/08          //was 0.12 Aditi Dec 9th 2018
+    static final double DRIVE_ENC_TURN_WHEEL_POWER = 0.15;  // default turning power using encoder, 2017/09/08          //was 0.12 Aditi Dec 9th 2018
     static final double DRIVE_WHEEL_POWER = 0.20;           // default driving power
     static final double TURN_WHEEL_POWER = 0.20;            // default turning power
     static final double TURN_SLOW_WHEEL_POWER = 0.15;       // slow turning power
     static final double SLOW_TURN_DEGREE = 10.0;            // degree to enable slow turn; 10.0 degree by dflt; 0, disabled
 
-    static final double ENC_DIST_SCALE = 2000.0/1.00;       // 2000 ticks <=> 1.00 meters, 2017/09/06
-    static final double ENC_DEG_SCALE = 2000.0/150;         // 2000 ticks <=> ~150 for MW6 on mat, 2017/10/15
+    static final double ENC_DIST_SCALE = 2000.0/1.25;       // 2000 ticks <=> 1.00 meters, 2017/09/06
+    static final double ENC_DEG_SCALE = 2000.0/225;         // 2000 ticks <=> ~150 for MW6 on mat, 2017/10/15
 
     static final double  AUTO_CORRECT_HEADING_GAIN = 0.012;  // previously 0.025; power percentage to be adjusted for each degree of heading error; 1-degree error => 5% power diff // dflt for 0.40, 2017/09/08
     static final double  AUTO_CORRECT_MAX_HEADING_ERROR = 40;  // power percentage to be adjusted for each degree of heading error; 1-degree error => 5% power diff
@@ -87,7 +87,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     // Mineral detector
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
-    static final boolean USE_MINERAL_DETECTION = true;
+    static final boolean USE_MINERAL_DETECTION = false;
     static final boolean DETECT_GOLD_MINERAL_BEFORE_START = true;
     static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     static final String LABEL_GOLD_MINERAL = "Gold Mineral";
@@ -126,9 +126,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            2.5, DRIVE_MINERAL_DETECTION,
-            1.0, DRIVE_LANDING,
-            1.5, DRIVE_PULL_PIN,
+            // 2.5, DRIVE_MINERAL_DETECTION,
+            //1.0, DRIVE_LANDING,
+            //1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP, // change based on the gold mineral's position
             60.0, DRIVE_STOP
     };
@@ -1255,7 +1255,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                                           double time) {
         double period = Math.abs(states[currStateId_ * 2]);
         if ((time - currStateStartTime_) <= period) {
-            servoDump_.setPosition(DUMP_DOWN);
+            servoMarker_.setPosition(MARKER_DROP_POS);
             return DRIVE_DROP_MARKER;
         }
 

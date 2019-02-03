@@ -268,6 +268,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         motorRB_.setPower(power_rb);
         motorLF_.setPower(power_lf);
         motorLB_.setPower(power_lb);
+
+        // telemetry.addData("WheelPower", "Factor="+String.format("%.2f",drive_power_factor)+"LF/RF/LB/RB: " + String.format("%.2f", motorLF_.getPower()) + "/" + String.format("%.2f", motorRF_.getPower()) + "/" + String.format("%.2f", motorLB_.getPower()) + "/" + String.format("%.2f", motorRB_.getPower()));
+        // telemetry.update();
     }
 
     double scaleDrivePower(double dVal,
