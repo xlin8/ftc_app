@@ -86,7 +86,18 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             motorRB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
 
-        if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(USE_LIFT){
+            motorLift_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
+        if (USE_MOTOR_INTAKE){
+            motorIntake_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
+        if(USE_SERVO_MARKER){
+            servoMarker_.setPosition(MARKER_DROP_POS);               //dumping pos.
+        }
+
     }
 
     void initializeWhenStart() {
@@ -116,6 +127,15 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         pullLiftPin();
 
         driveLiftMotor();
+
+        driveLiftMotor();
+
+        driveIntakeSweeper();
+
+        dumpMinerals();
+
+        dropMarker();
+
     }
 
     void checkPressedButton(int pad_id) {
@@ -367,5 +387,72 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             motorLift_.setPower(liftPower_);
         }
     }
+
+    void driveIntakeSweeper(){
+        if(USE_MOTOR_INTAKE){
+            if (yCnt_[1] % 4 == 1) {
+                motorIntake_.setPower(INTAKE_POWER_IN);
+            } else if (yCnt_[1] % 4 == 3) {
+                motorIntake_.setPower(INTAKE_POWER_OUT);
+            } else {
+                motorIntake_.setPower(INTAKE_POWER_BRAKE);
+            }
+        }
+    }
+
+    void dumpMinerals(){
+        if (USE_SERVO_DUMP){
+            if (gamepad2.b) {
+                servoDump_.setPosition(DUMP_UP);
+            } else {
+                servoDump_.setPosition(DUMP_COLLECTION);
+            }
+        }
+    }
+
+    void dropMarker(){
+        //Todo : do we need this in case Auto doesn't work?
+        if (USE_SERVO_MARKER){
+            if (gamepad1.a) {
+                servoMarker_.setPosition(MARKER_DROP_POS);
+            } else {
+                // if the flippy/ extention servo is already out (bcos the support under it collides w/ servo marker)
+              // servoMarker_.setPosition(MARKER_BACK_COMPACT_POS);
+            }
+        }
+    }
+
+
+//    void driveMineralsLiftExtention(){
+//        if (USE_EXTENTION) {
+//            //todo - servo/motor??
+//        }
+//    }
+//
+//    void driveMineralFlippy(){
+//        if(USE_MINERAL_FLIP) {
+//            //todo - 2 motors??
+//        }
+//    }
+
+////    //todo : automated sequences
+//    void driveCollectMineralsPos(){  //a = collect pos.
+//        if (USE_MOTOR_INTAKE && USE_EXTENTION && USE_MINERAL_FLIP) {
+//            if(aCnt_[1] % 2 == 0){
+//            motorIntake_.setPower(INTAKE_POWER_IN);
+//            {
+//        }
+//    }
+
+//    void driveDumpMineralsPos(){       //x = dump pos.
+//
+//    }
+//
+//    void driveCompactPos(){
+//        //do we need this?
+//    }
+//
+
+
 }
 

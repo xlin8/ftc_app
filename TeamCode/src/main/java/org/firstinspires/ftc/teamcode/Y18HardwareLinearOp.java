@@ -66,9 +66,9 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     // Dumping servo
     Servo servoDump_;
-    static final boolean USE_SERVO_DUMP = false;
+    static final boolean USE_SERVO_DUMP = true;
     static final double DUMP_UP = 0.45;
-    static final double DUMP_DOWN = 0;
+    static final double DUMP_COLLECTION = 0.1;
     static final double DUMP_INIT_POSITION = DUMP_UP;
 
     // Team marker servo
@@ -76,6 +76,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_SERVO_MARKER = true;
     static final double MARKER_UP_POS = 0.5;
     static final double MARKER_DROP_POS = 0.9;
+    static final double MARKER_BACK_COMPACT_POS = 0.0;
 
     // Front linear slide
     DcMotor motorMineralFlip1_;
@@ -84,7 +85,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     // Intake motor
     DcMotor motorIntake_;
-    static final boolean USE_MOTOR_INTAKE = false;
+    static final boolean USE_MOTOR_INTAKE = true;
     static final double INTAKE_POWER_IN = -1.0;
     static final double INTAKE_POWER_OUT = 1.0;
     static final double INTAKE_POWER_BRAKE = 0.0;
