@@ -60,7 +60,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
-    static final double  AUTO_RESET_ENC_TIME = 1.00;        // period for reseting encoders when entering DRIVE_RESET_ENC_DONE mode
+    static final double  AUTO_RESET_ENC_TIME = 1.00;        // period for reseting encoders when entering DRIVE_RESET_ENC_DONE
+    static final double  AUTO_ENC_HANG_TIME_OUT = 2.00;
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
     /// Power for drive and turn, need be tuned for each robot
@@ -72,7 +73,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double TURN_SLOW_WHEEL_POWER = 0.15;       // slow turning power
     static final double SLOW_TURN_DEGREE = 10.0;            // degree to enable slow turn; 10.0 degree by dflt; 0, disabled
 
-    static final double ENC_DIST_SCALE = 2000.0/1.25;       // 2000 ticks <=> 1.00 meters, 2017/09/06
+    static final double ENC_DIST_SCALE = (2000.0 /1.25) / 1.18;       // 2000 ticks <=> 1.00 meters, 2017/09/06
     static final double ENC_DEG_SCALE = 2000.0/225;         // 2000 ticks <=> ~150 for MW6 on mat, 2017/10/15
 
     static final double  AUTO_CORRECT_HEADING_GAIN = 0.012;  // previously 0.025; power percentage to be adjusted for each degree of heading error; 1-degree error => 5% power diff // dflt for 0.40, 2017/09/08
@@ -126,9 +127,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double [] CommonTrip = {
             0.1, DRIVE_STOP,
-            // 2.5, DRIVE_MINERAL_DETECTION,
-            //1.0, DRIVE_LANDING,
-            //1.5, DRIVE_PULL_PIN,
+            2.5, DRIVE_MINERAL_DETECTION,
+            1.0, DRIVE_LANDING,
+            1.5, DRIVE_PULL_PIN,
             (double)(NUM_TRIPS), DRIVE_CHANGE_TRIP, // change based on the gold mineral's position
             60.0, DRIVE_STOP
     };
@@ -194,7 +195,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.9, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -228,7 +229,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             35, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.7, DRIVE_FORWARD_ENC,
+            0.6, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.40, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -252,7 +253,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.15, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
             1.9, DRIVE_SHIFT_GEAR,
-            1.9, DRIVE_BACKWARD_ENC,
+            1.8, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -448,6 +449,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     double currStateStartTime_ = 0.0;                       // current state start time
     double currStateStartHeading_ = 0.0;                    // current state start heading
     double currStateEncCnt_ = 0.0;                          // current state targeted encoder count
+    double prevReadEncCnt_ = 0.0;
+    double prevEncCntChangeStartTime_ = 0;
 
     double initWaitTime_ = 0.0;                             // Additional wait time before starting state machine
 
@@ -823,6 +826,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         currStateStartHeading_ = heading_;
         currStateEncCnt_ = 0.0;
+        prevReadEncCnt_ = 0.0;
+        prevEncCntChangeStartTime_ = time;
 
         ++currStateId_;
 
@@ -952,14 +957,21 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                                             double time) {
         // Use encoder to control driving
         if (curr_mode == DRIVE_RESET_ENC_DONE) {   // wait till encoder is reset
+            currStateEncCnt_ = 0.0;
+            prevReadEncCnt_ = 0.0;
+            prevEncCntChangeStartTime_ = time;
+
             if (haveDriveEncodersReset()) {        // reset done, go to next state
                 return gotoNextState(states, time, false);
             }
 
 	        // stay in RESET_ENC state, wait for reseting to complete
-            if (AUTO_RESET_ENC_TIME > 0 &&
-                time < (currStateStartTime_ + AUTO_RESET_ENC_TIME)) {  // auto-reset encoders
-                resetDriveEncoders();
+            if (AUTO_RESET_ENC_TIME > 0) {
+                if (time < (currStateStartTime_ + AUTO_RESET_ENC_TIME)) {  // auto-reset encoders
+                    resetDriveEncoders();
+                } else {
+                    return gotoNextState(states, time, false);
+                }
             }
 
             return DRIVE_RESET_ENC_DONE;
@@ -971,6 +983,15 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         if (tg_enc_cnt == 0.0) {
             return gotoNextState(states, time, /*reset_encoders*/false);
+        }
+
+        if (prevReadEncCnt_ != currStateEncCnt_) {
+            prevReadEncCnt_ = currStateEncCnt_;
+            prevEncCntChangeStartTime_ = time;
+        } else {
+            if (time >= (prevEncCntChangeStartTime_ + AUTO_ENC_HANG_TIME_OUT)) {
+                return gotoNextState(states, time, /*reset_encoders*/false);
+            }
         }
 
         switch (curr_mode) {
