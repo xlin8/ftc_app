@@ -62,7 +62,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
     static final double  AUTO_RESET_ENC_TIME = 1.00;        // period for reseting encoders when entering DRIVE_RESET_ENC_DONE
-    static final double  AUTO_ENC_HANG_TIME_OUT = 2.00;
+    static final double  AUTO_ENC_HANG_TIME_OUT = 6.00;     // 2sec for ~60deg
     static final double  TIME_TO_ENTER_DEPOT = 23.00;
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
@@ -166,9 +166,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double [] CraterTripLeftSingleSample = {
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.2, DRIVE_SHIFT_RIGHT,
-            0.1, DRIVE_RESET_ENC_DONE,
-            1.9, DRIVE_BACKWARD_ENC,
+            //0.2, DRIVE_SHIFT_RIGHT,
+            //0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_RESET_HEADING,
+            //1.9, DRIVE_BACKWARD_ENC,
+            2.0, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -213,9 +215,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double [] CraterTripCenterSingleSample = {
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            0.2, DRIVE_SHIFT_RIGHT,
-            0.1, DRIVE_RESET_ENC_DONE,
-            1.9, DRIVE_BACKWARD_ENC,
+            //0.2, DRIVE_SHIFT_RIGHT,
+            //0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_RESET_HEADING,
+            2.0, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -243,7 +246,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.35, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            125, DRIVE_TURN_LEFT_ENC,
+            110, DRIVE_TURN_LEFT_ENC,
             // 65, DRIVE_TURN_LEFT_ENC,
             // 0.1, DRIVE_RESET_ENC_DONE,
             // 60, DRIVE_TURN_LEFT_ENC,
@@ -251,7 +254,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.65, DRIVE_SHIFT_GEAR,
             1.40, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            60, DRIVE_TURN_LEFT_ENC,
+            35, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
@@ -304,7 +307,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_HEADING,
             1.9, DRIVE_SHIFT_GEAR,
             //1.8, DRIVE_BACKWARD_ENC,
-            1.8, DRIVE_BACKWARD_ENC_CRATER,
+            2.0, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
