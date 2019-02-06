@@ -128,23 +128,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int NUM_TRIPS = 20;
 
     static final double [] CommonTrip = {
-/*----------------------------------------------
-//  Unit tests, comment it out after unit testing is done
-            0.1, DRIVE_STOP,
-            1.65, DRIVE_SHIFT_GEAR,
-            0.9, DRIVE_FORWARD_ENC,
-            5.0, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash      
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.3, DRIVE_FORWARD_ENC_TO_WALL,
-            0.1, DRIVE_RESET_ENC_DONE,
-            1.0, DRIVE_DROP_MARKER,
-            0.1, DRIVE_RESET_HEADING,
-            1.9, DRIVE_SHIFT_GEAR,
-            //1.8, DRIVE_BACKWARD_ENC_CRATER,
-            2.1, DRIVE_BACKWARD_ENC_CRATER,
-            60.0, DRIVE_STOP, 
-///---------------------------------------------*/
-
             0.1, DRIVE_STOP,
             2.5, DRIVE_MINERAL_DETECTION,
             1.0, DRIVE_LANDING,
@@ -172,7 +155,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
             //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
-            0.7, DRIVE_FORWARD_ENC,
+            1.2, DRIVE_FORWARD_ENC,
             TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
             0.1, DRIVE_RESET_ENC_DONE,
             0.5, DRIVE_FORWARD_ENC_TO_WALL,
@@ -256,14 +239,17 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             35, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.5, DRIVE_FORWARD_ENC,
+            0.55, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.3, DRIVE_BACKWARD_ENC,
+            0.35, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             125, DRIVE_TURN_LEFT_ENC,
+            // 65, DRIVE_TURN_LEFT_ENC,
+            // 0.1, DRIVE_RESET_ENC_DONE,
+            // 60, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.65, DRIVE_SHIFT_GEAR,
-            1.33, DRIVE_FORWARD_ENC,
+            1.40, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
