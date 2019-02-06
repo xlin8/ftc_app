@@ -12,7 +12,6 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
@@ -56,12 +55,15 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int DRIVE_DROP_MARKER = 27;
     static final int DRIVE_MINERAL_DETECTION = 28;
     static final int DRIVE_FORWARD_ENC_AND_DET_LINE = 29;   // go froward up to depot line and stop when the color sensor detects depot line
-    static final int DRIVE_MODE_NUM = 30;                   // total number of modes
+    static final int DRIVE_RESET_HEADING = 30;              // reset target heading to current heading after aligning with the wall
+    static final int DRIVE_BACKWARD_ENC_CRATER = 31;        // drive backwark to crater
+    static final int DRIVE_MODE_NUM = 32;                   // total number of modes
 
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
     static final double  AUTO_RESET_ENC_TIME = 1.00;        // period for reseting encoders when entering DRIVE_RESET_ENC_DONE
     static final double  AUTO_ENC_HANG_TIME_OUT = 2.00;
+    static final double  TIME_TO_ENTER_DEPOT = 23.00;
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
     /// Power for drive and turn, need be tuned for each robot
@@ -82,8 +84,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double  MAX_HEADING_CORRECTION = 0.95;     // max heading correction; 0, not used
 
     static final double MAX_WALL_DISTANCE = 17.5;           // max distance to wall; distance higher than this will trigger re-alignment
-    static final double MAX_DISTANCE_RANGE = 99.9;          // any distance larger than this value will be consider as invalid reading
-    static final double SEE_WALL_DISTANCE = 100.0;          // wall distance to stop
+    static final double MAX_DISTANCE_RANGE = 199.9;         // any distance larger than this value will be consider as invalid reading, for REV 2M range sensor
+    static final double SEE_WALL_DISTANCE = 50.0;           // wall distance to stop for team marker delivery
 
     // Mineral detector
     VuforiaLocalizer vuforia_;
@@ -126,6 +128,23 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int NUM_TRIPS = 20;
 
     static final double [] CommonTrip = {
+/*----------------------------------------------
+//  Unit tests, comment it out after unit testing is done
+            0.1, DRIVE_STOP,
+            1.65, DRIVE_SHIFT_GEAR,
+            0.9, DRIVE_FORWARD_ENC,
+            5.0, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash      
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.3, DRIVE_FORWARD_ENC_TO_WALL,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_HEADING,
+            1.9, DRIVE_SHIFT_GEAR,
+            //1.8, DRIVE_BACKWARD_ENC_CRATER,
+            2.1, DRIVE_BACKWARD_ENC_CRATER,
+            60.0, DRIVE_STOP, 
+///---------------------------------------------*/
+
             0.1, DRIVE_STOP,
             2.5, DRIVE_MINERAL_DETECTION,
             1.0, DRIVE_LANDING,
@@ -152,7 +171,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
-            1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            0.7, DRIVE_FORWARD_ENC,
+            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -195,7 +218,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            // 1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            0.75, DRIVE_FORWARD_ENC,
+            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -205,7 +232,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_DROP_MARKER,
             0.2, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.7, DRIVE_BACKWARD_ENC,
+            1.9, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -229,11 +256,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             35, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.6, DRIVE_FORWARD_ENC,
+            0.5, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.40, DRIVE_BACKWARD_ENC,
+            0.3, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            110, DRIVE_TURN_LEFT_ENC,
+            125, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.65, DRIVE_SHIFT_GEAR,
             1.33, DRIVE_FORWARD_ENC,
@@ -242,18 +269,56 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
-            1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            0.7, DRIVE_FORWARD_ENC,
+            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
 
+/*
+    static final double [] CraterTripRight = {
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.17, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            35, DRIVE_TURN_RIGHT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.40, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            //110, DRIVE_TURN_LEFT_ENC,
+            125, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.65, DRIVE_SHIFT_GEAR,
+            1.33, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            //60, DRIVE_TURN_LEFT_ENC,
+            35, DRIVE_TURN_LEFT_ENC,       // keep it bias to wall, and use side wheels to align
+            0.1, DRIVE_RESET_ENC_DONE,
+            //1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
+            //0.1, DRIVE_RESET_ENC_DONE,
+            //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
+            0.9, DRIVE_FORWARD_ENC,
+            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash      
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.3, DRIVE_FORWARD_ENC_TO_WALL,
+            (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
+            60.0, DRIVE_STOP
+    };
+    */
+
     static final double [] CraterTripRightSingleSample = {
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            0.15, DRIVE_SHIFT_RIGHT,
-            0.1, DRIVE_RESET_ENC_DONE,
+            //0.15, DRIVE_SHIFT_RIGHT,
+            //0.1, DRIVE_RESET_ENC_DONE,
+            0.1, DRIVE_RESET_HEADING,
             1.9, DRIVE_SHIFT_GEAR,
-            1.8, DRIVE_BACKWARD_ENC,
+            //1.8, DRIVE_BACKWARD_ENC,
+            1.8, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -261,6 +326,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double [] CraterTripRightDoubleSample = {
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
+            0.1, DRIVE_RESET_HEADING,
             30, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.65, DRIVE_BACKWARD_ENC,
@@ -611,6 +677,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                     case DRIVE_BACKWARD_ENC:
                     case DRIVE_FORWARD_ENC_SLOW:
                     case DRIVE_BACKWARD_ENC_SLOW:
+                    case DRIVE_BACKWARD_ENC_CRATER:
                         // Get the heading error from IMU
                         h_err = getHeadingError();  // expensive heading reading
                         if (Math.abs(h_err) > AUTO_CORRECT_MAX_HEADING_ERROR) {  // prevent incorrect heading error causing robot to spin
@@ -625,6 +692,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             // Adjust wheel power to correct heading or follow wall
             if (Math.abs(h_err) > 0.0) {
                 if (drive_mode == DRIVE_BACKWARD_ENC ||
+                        drive_mode == DRIVE_BACKWARD_ENC_CRATER ||
                         drive_mode == DRIVE_BACKWARD_ENC_SLOW ||
                         drive_mode == DRIVE_BACKWARD_ENC_TO_WALL) {
                     // flip heading error for backward drive
@@ -682,13 +750,16 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         motorLB_.setPower(power_lb);
         motorRB_.setPower(power_rb);
 
-        boolean show_msg_flag = false;
-        boolean debug_drive_motor_flag = true;
+        boolean show_msg_flag = true;
+        boolean debug_drive_motor_flag = false;
+        boolean show_state = true;
+        boolean show_heading = true;
+        boolean show_rev_range = true;
 
         if (show_msg_flag) {
             telemetry.addData("Trip", String.valueOf(getTripName(currTripId_))+", TimeLeft:"+String.format("%.2f",AUTO_RUN_TIME-time_t));
-            telemetry.addData("CurrState ID", String.valueOf(currStateId_) + " mode=%d", drive_mode);
-            telemetry.addData("Heading", String.format("Start=%.2f/Curr=%.2f/Target=%.2f; Error=%.2f/AHE=%.2f/Corr=%.2f; DriveFactor=%.2f", currStateStartHeading_, heading_, targetHeading_, headingError_, adjustedHeadingError_, headingCorrection_, drivePowerFactor_));
+            if(show_state) telemetry.addData("CurrState ID", String.valueOf(currStateId_) + " mode=%d", drive_mode);
+            if(show_heading) telemetry.addData("Heading", String.format("Start=%.2f/Curr=%.2f/Target=%.2f; Error=%.2f/AHE=%.2f/Corr=%.2f; DriveFactor=%.2f", currStateStartHeading_, heading_, targetHeading_, headingError_, adjustedHeadingError_, headingCorrection_, drivePowerFactor_));
 
             if (debug_drive_motor_flag && USE_ENC_FOR_DRIVE) {
                 int lf_enc = motorLF_.getCurrentPosition();
@@ -697,6 +768,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 int rr_enc = motorRB_.getCurrentPosition();
                 telemetry.addData("Current EncPos", "Expect=" + String.valueOf(currStateEncCnt_)+ ", LF="+String.valueOf(lf_enc)+", LR="+String.valueOf(lr_enc)+"; RF="+String.valueOf(rf_enc)+", RR="+String.valueOf(rr_enc));
             }
+
+            if( show_rev_range && revRange_!=null ) telemetry.addData("RevRange", "dist=" + String.valueOf(revRange_.getDistance(DistanceUnit.CM))); 
 
             telemetry.update();
         }
@@ -751,6 +824,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_FORWARD_ENC_TO_WALL:
                 return DRIVE_ENC_SLOW_WHEEL_POWER;
             case DRIVE_BACKWARD_ENC:
+            case DRIVE_BACKWARD_ENC_CRATER:
                 return (-1.0 * DRIVE_ENC_WHEEL_POWER);
             case DRIVE_BACKWARD_ENC_SLOW:
             case DRIVE_BACKWARD_ENC_TO_WALL:
@@ -800,6 +874,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             case DRIVE_FORWARD_ENC_TO_WALL:
                 return (-1.0 * DRIVE_ENC_SLOW_WHEEL_POWER);
             case DRIVE_BACKWARD_ENC:
+            case DRIVE_BACKWARD_ENC_CRATER:
                 return DRIVE_ENC_WHEEL_POWER;
             case DRIVE_BACKWARD_ENC_SLOW:
             case DRIVE_BACKWARD_ENC_TO_WALL:
@@ -913,6 +988,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return getDriveModeWhenAtDriverStateJump(states, time);
             case DRIVE_SHIFT_GEAR:
                 return getDriveModeWhenAtDriveShiftGear(states, time);
+            case DRIVE_RESET_HEADING:
+                return getDriveModeWhenAtDriveResetHeading(states, time);
             case DRIVE_CHANGE_TRIP:
                 return getDriveModeWhenAtChangeTrip(states, time);
             case DRIVE_LANDING: 
@@ -937,6 +1014,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                        case DRIVE_SHIFT_RIGHT_ENC:
                        case DRIVE_FORWARD_ENC_TO_WALL:
                        case DRIVE_BACKWARD_ENC_TO_WALL:
+                       case DRIVE_BACKWARD_ENC_CRATER:
                           return getDriveModeWhenAtDriveUsingEncoder(mode, states, time);
                        case DRIVE_FORWARD_ENC_AND_DET_LINE:
                            return getDriveModeWhenAtDriveForwardUsingEncoderAndDetectDepot(mode, states, time);
@@ -1001,6 +1079,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 	        case DRIVE_BACKWARD_ENC_SLOW:
 	        case DRIVE_FORWARD_ENC_SLOW:
 	        case DRIVE_BACKWARD_ENC_TO_WALL:
+	        case DRIVE_BACKWARD_ENC_CRATER:
             case DRIVE_FORWARD_ENC_TO_WALL:
                 if (tg_enc_cnt < 10.0) {   // treat it as meters, convert it to encoder count
                     tg_enc_cnt = tg_enc_cnt * ENC_DIST_SCALE;
@@ -1019,14 +1098,27 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         runUsingEncoders();
 
         if (curr_mode == DRIVE_BACKWARD_ENC_TO_WALL || curr_mode == DRIVE_FORWARD_ENC_TO_WALL) {
-            if (mrRange_ != null) {
+            if( revRange_ != null) {
+                double dis = revRange_.getDistance(DistanceUnit.CM);
+                if( dis > 10.0 && dis < 100.0 ) {   // valid reading
+                    if (dis < SEE_WALL_DISTANCE) {  // stop 50cm away from the wall for team marker delivery
+                        return gotoNextState(states, time, true);
+                    }
+                }
+            } else if( mrRange_ != null) {
                 double dis = mrRange_.getDistance(DistanceUnit.CM);
                 if (dis > 0.0) {
-                    if (dis > SEE_WALL_DISTANCE) {
+                    if (dis < SEE_WALL_DISTANCE) {  // stop 50cm away from the wall for team marker delivery
                         return gotoNextState(states, time, true);
                     }
                 }
             }
+        } else if( curr_mode == DRIVE_BACKWARD_ENC_CRATER && magSwitch_!=null ) {
+           double lf_enc = motorLF_.getCurrentPosition();
+           double dist_travelled = Math.abs( lf_enc / tg_enc_cnt ) ;
+           if( !magSwitch_.getState() && dist_travelled>0.9 ) {  // switch triggered by crater, STOP the robot
+              return gotoNextState(states, time, true);
+           }
         }
 
         if (haveDriveEncodersReached(tg_enc_cnt, tg_enc_cnt)) {  // reset encoders and go to next state
@@ -1188,6 +1280,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         if (f > 0.33 && f <= 3.0) drivePowerFactor_ = f;
         return gotoNextState(states, time, true);
     }
+
+    int getDriveModeWhenAtDriveResetHeading(double [] states, double time) {
+       targetHeading_ = getHeading();   // reset target heading after aligning to wall
+        return gotoNextState(states, time, true);
+    }
+
 
     int getDriveModeWhenAtChangeTrip(double [] states,
                                      double time) {

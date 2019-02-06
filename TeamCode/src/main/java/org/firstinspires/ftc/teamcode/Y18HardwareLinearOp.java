@@ -7,20 +7,19 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import java.util.Locale;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -49,7 +48,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_LIFT = true;
     static final double LIFT_UP_POWER = -1.0;
     static final double LIFT_DOWN_POWER = 1.0;
-    static final double LIFT_LANDING_ENC_CNT = 13500;           //
+    //static final double LIFT_LANDING_ENC_CNT = 13500;           //
+    static final double LIFT_LANDING_ENC_CNT = 12000;           //  GB53 motor
     static final double MIN_LIFT_HOLD_POWER = 0.05;        // min power to hold the lift
     static final double MIN_LIFT_POWER = 0.0;
     double liftPower_ = 0;
@@ -105,6 +105,12 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     ModernRoboticsI2cRangeSensor mrRange_;                 // MR range sensor
     static final boolean USE_MR_RANGE = false;             // sensor removed bcz it may cause crash, 2018/01/06
     double mrRangeDist_ = 0.0;
+
+    static final boolean USE_REV_RANGE = true;            
+    Rev2mDistanceSensor revRange_;                         // REV 2m range sensor
+
+    static final boolean USE_MAG_SWITCH = true;            
+    DigitalChannel magSwitch_;                        // REV magnetic switch
 
     LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
     static final boolean USE_RGB_FOR_DEPOT_LINE = false;    // true for detecting depot border before dropping marker
@@ -208,6 +214,13 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
         if (USE_MR_RANGE) {
             mrRange_ = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "mr_range");
+        }
+        if (USE_REV_RANGE) {
+            revRange_ = (Rev2mDistanceSensor) (hardwareMap.get(DistanceSensor.class, "rev_range"));
+        }
+        if (USE_MAG_SWITCH) {
+           magSwitch_ =  hardwareMap.get(DigitalChannel.class, "mag_switch");
+           magSwitch_.setMode(DigitalChannelController.Mode.INPUT);
         }
 
         timer_.reset();
