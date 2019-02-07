@@ -62,7 +62,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     /// General settings for AutoRun
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
     static final double  AUTO_RESET_ENC_TIME = 1.00;        // period for reseting encoders when entering DRIVE_RESET_ENC_DONE
-    static final double  AUTO_ENC_HANG_TIME_OUT = 6.00;     // 2sec for ~60deg
+    static final double  AUTO_ENC_STUCK_TIME_OUT = 2.00;     // 2sec for ~60deg
     static final double  TIME_TO_ENTER_DEPOT = 23.00;
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
@@ -314,38 +314,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             60.0, DRIVE_STOP
     };
 
-/*
-    static final double [] CraterTripRight = {
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.17, DRIVE_FORWARD_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
-            35, DRIVE_TURN_RIGHT_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.6, DRIVE_FORWARD_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.40, DRIVE_BACKWARD_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
-            //110, DRIVE_TURN_LEFT_ENC,
-            125, DRIVE_TURN_LEFT_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
-            1.65, DRIVE_SHIFT_GEAR,
-            1.33, DRIVE_FORWARD_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
-            //60, DRIVE_TURN_LEFT_ENC,
-            35, DRIVE_TURN_LEFT_ENC,       // keep it bias to wall, and use side wheels to align
-            0.1, DRIVE_RESET_ENC_DONE,
-            //1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
-            //0.1, DRIVE_RESET_ENC_DONE,
-            //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
-            0.9, DRIVE_FORWARD_ENC,
-            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash      
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.3, DRIVE_FORWARD_ENC_TO_WALL,
-            (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
-            60.0, DRIVE_STOP
-    };
-    */
-
     static final double [] CraterTripRightSingleSample = {
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
@@ -551,7 +519,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     double currStateStartTime_ = 0.0;                       // current state start time
     double currStateStartHeading_ = 0.0;                    // current state start heading
     double currStateEncCnt_ = 0.0;                          // current state targeted encoder count
-    double prevReadEncCnt_ = 0.0;
+    double prevReadEncCntMotorLF_ = 0.0;
+    double prevReadEncCntMotorRF_ = 0.0;
     double prevEncCntChangeStartTime_ = 0;
 
     double initWaitTime_ = 0.0;                             // Additional wait time before starting state machine
@@ -939,7 +908,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         currStateStartHeading_ = heading_;
         currStateEncCnt_ = 0.0;
-        prevReadEncCnt_ = 0.0;
+        prevReadEncCntMotorLF_ = 0.0;
+        prevReadEncCntMotorRF_ = 0.0;
         prevEncCntChangeStartTime_ = time;
 
         ++currStateId_;
@@ -1074,7 +1044,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         // Use encoder to control driving
         if (curr_mode == DRIVE_RESET_ENC_DONE) {   // wait till encoder is reset
             currStateEncCnt_ = 0.0;
-            prevReadEncCnt_ = 0.0;
+            prevReadEncCntMotorLF_ = 0.0;
+            prevReadEncCntMotorRF_ = 0.0;
             prevEncCntChangeStartTime_ = time;
 
             if (haveDriveEncodersReset()) {        // reset done, go to next state
@@ -1099,15 +1070,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         if (tg_enc_cnt == 0.0) {
             return gotoNextState(states, time, /*reset_encoders*/false);
-        }
-
-        if (prevReadEncCnt_ != currStateEncCnt_) {
-            prevReadEncCnt_ = currStateEncCnt_;
-            prevEncCntChangeStartTime_ = time;
-        } else {
-            if (time >= (prevEncCntChangeStartTime_ + AUTO_ENC_HANG_TIME_OUT)) {
-                return gotoNextState(states, time, /*reset_encoders*/false);
-            }
         }
 
         switch (curr_mode) {
@@ -1165,6 +1127,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 targetHeading_ = getHeading();   // reset target heading after aligning to wall
             }
 
+            return gotoNextState(states, time, true);
+        }
+
+        if (isDriverEncoderStuck(time) == true) {
+            // Since the encoders are stuck and they have timed out, go to the next state anyways.
             return gotoNextState(states, time, true);
         }
 
@@ -1622,6 +1589,25 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     /// Indicate whether the drive motors' encoders have reached a value.
     boolean haveDriveEncodersReached(double p_left_count, double p_right_count) {
         if (isLeftEncodersReached(p_left_count) && isRightEncodersReached(p_right_count)) return true;
+        return false;
+    }
+
+    boolean isDriverEncoderStuck(double time) {
+        if (motorRF_ == null || motorLF_ == null) return false;
+
+        double curr_read_enc_motor_lf = motorLF_.getCurrentPosition();
+        double curr_read_enc_motor_rf = motorRF_.getCurrentPosition();
+        if (prevReadEncCntMotorLF_ != curr_read_enc_motor_lf || prevReadEncCntMotorRF_ != curr_read_enc_motor_rf) {
+            prevReadEncCntMotorLF_ = curr_read_enc_motor_lf;
+            prevReadEncCntMotorRF_ = curr_read_enc_motor_lf;
+            prevEncCntChangeStartTime_ = time;
+            return false;
+        }
+
+        if (time >= (prevEncCntChangeStartTime_ + AUTO_ENC_STUCK_TIME_OUT)) {
+            return true; // if the encoder is stuck for more than AUTO_ENC_STUCK_TIME_OUT seconds, then return that the encoders are stuck
+        }
+
         return false;
     }
 
