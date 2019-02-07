@@ -124,10 +124,38 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final int CRATER_TRIP_CENTER_SINGLE_SAMPLE = 16;
     static final int CRATER_TRIP_RIGHT_DOUBLE_SAMPLE = 17;
     static final int CRATER_TRIP_RIGHT_SINGLE_SAMPLE = 18;
-    static final int NO_TRIP = 19;
-    static final int NUM_TRIPS = 20;
+    static final int CRATER_TRIP_DROP_MARK_AND_PARK = 19;
+    static final int NO_TRIP = 20;
+    static final int NUM_TRIPS = 21;
 
     static final double [] CommonTrip = {
+/*----------------------------------------------
+//  Unit tests, comment it out after unit testing is done
+
+            0.1, DRIVE_STOP,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
+            2.0, DRIVE_SHIFT_GEAR,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.9, DRIVE_FORWARD_ENC,
+            5.0, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash      
+            0.1, DRIVE_RESET_ENC_DONE,
+            //1.0, DRIVE_SHIFT_GEAR,
+            0.5, DRIVE_FORWARD_ENC_TO_WALL,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.5, DRIVE_DROP_MARKER,
+
+            //0.1, DRIVE_RESET_HEADING,
+            0.2, DRIVE_SHIFT_RIGHT,
+            0.1, DRIVE_RESET_ENC_DONE,
+            2.0, DRIVE_SHIFT_GEAR,
+            1.7, DRIVE_BACKWARD_ENC,
+            0.5, DRIVE_SHIFT_GEAR, 
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.3, DRIVE_BACKWARD_ENC_CRATER,
+            60.0, DRIVE_STOP, 
+//----------------------------------------------
+*/
             0.1, DRIVE_STOP,
             2.5, DRIVE_MINERAL_DETECTION,
             1.0, DRIVE_LANDING,
@@ -156,9 +184,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.8, DRIVE_SHIFT_GEAR,
             //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
             1.2, DRIVE_FORWARD_ENC,
-            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.5, DRIVE_FORWARD_ENC_TO_WALL,
+            //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+            //0.1, DRIVE_RESET_ENC_DONE,
+            //0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -205,10 +233,29 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             // 1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
             0.75, DRIVE_FORWARD_ENC,
-            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.5, DRIVE_FORWARD_ENC_TO_WALL,
+            //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+            //0.1, DRIVE_RESET_ENC_DONE,
+            //0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
+            60.0, DRIVE_STOP
+    };
+
+    static final double [] CraterTripDropMarkAndPark = {
+            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+
+            0.1, DRIVE_RESET_ENC_DONE,
+            //1.0, DRIVE_SHIFT_GEAR,
+            0.5, DRIVE_FORWARD_ENC_TO_WALL,
+            0.5, DRIVE_DROP_MARKER,
+
+            0.1, DRIVE_RESET_ENC_DONE, 
+            0.2, DRIVE_SHIFT_RIGHT,
+            2.0, DRIVE_SHIFT_GEAR,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.7, DRIVE_BACKWARD_ENC,
+            0.5, DRIVE_SHIFT_GEAR, 
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.3, DRIVE_BACKWARD_ENC_CRATER, 
             60.0, DRIVE_STOP
     };
 
@@ -260,9 +307,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
             0.7, DRIVE_FORWARD_ENC,
-            TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-            0.1, DRIVE_RESET_ENC_DONE,
-            0.5, DRIVE_FORWARD_ENC_TO_WALL,
+            //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
+            //0.1, DRIVE_RESET_ENC_DONE,
+            //0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -744,6 +791,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         boolean show_state = true;
         boolean show_heading = true;
         boolean show_rev_range = true;
+        boolean show_mag_switch = true;
 
         if (show_msg_flag) {
             telemetry.addData("Trip", String.valueOf(getTripName(currTripId_))+", TimeLeft:"+String.format("%.2f",AUTO_RUN_TIME-time_t));
@@ -759,6 +807,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             }
 
             if( show_rev_range && revRange_!=null ) telemetry.addData("RevRange", "dist=" + String.valueOf(revRange_.getDistance(DistanceUnit.CM))); 
+            if( show_mag_switch && magSwitch_!=null ) telemetry.addData("Magnetic Switch", "state=" + String.valueOf(magSwitch_.getState())); 
 
             telemetry.update();
         }
@@ -1105,7 +1154,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         } else if( curr_mode == DRIVE_BACKWARD_ENC_CRATER && magSwitch_!=null ) {
            double lf_enc = motorLF_.getCurrentPosition();
            double dist_travelled = Math.abs( lf_enc / tg_enc_cnt ) ;
-           if( !magSwitch_.getState() && dist_travelled>0.9 ) {  // switch triggered by crater, STOP the robot
+           if( magSwitch_.getState() && dist_travelled>0.5 ) {  // switch triggered by crater, STOP the robot
+              // magnetic swtich active low; so FALSE by dflt, TRUE if it touches the crater
               return gotoNextState(states, time, true);
            }
         }
@@ -1289,7 +1339,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                         if (isShortTripFlag_ == true) currTripId_ = CRATER_TRIP_LEFT_SHORT;
                         else if (currTripId_ != CRATER_TRIP_LEFT) currTripId_ = CRATER_TRIP_LEFT;
                         else {
-                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_LEFT_SINGLE_SAMPLE;
+                            //if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_LEFT_SINGLE_SAMPLE;
+                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_DROP_MARK_AND_PARK;
                             else currTripId_ = CRATER_TRIP_LEFT_DOUBLE_SAMPLE;
                         }
                     } else {
@@ -1302,7 +1353,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                         if (isShortTripFlag_ == true) currTripId_ = CRATER_TRIP_RIGHT_SHORT;
                         else if (currTripId_ != CRATER_TRIP_RIGHT) currTripId_ = CRATER_TRIP_RIGHT;
                         else {
-                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_RIGHT_SINGLE_SAMPLE;
+                            //if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_RIGHT_SINGLE_SAMPLE;
+                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_DROP_MARK_AND_PARK;
                             else currTripId_ = CRATER_TRIP_RIGHT_DOUBLE_SAMPLE;
                         }
                     } else {
@@ -1316,7 +1368,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                         else if (currTripId_ != CRATER_TRIP_CENTER) {
                             currTripId_ = CRATER_TRIP_CENTER;
                         } else {
-                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_CENTER_SINGLE_SAMPLE;
+                            //if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_CENTER_SINGLE_SAMPLE;
+                            if (isCraterDoubleSampleTrip == false) currTripId_ = CRATER_TRIP_DROP_MARK_AND_PARK;
                             else currTripId_ = CRATER_TRIP_CENTER_DOUBLE_SAMPLE;
                         }
                     } else {
@@ -1418,6 +1471,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return "CraterRightDoubleSample";
             case CRATER_TRIP_RIGHT_SINGLE_SAMPLE:
                 return "CraterRightSingleSample";
+            case CRATER_TRIP_DROP_MARK_AND_PARK:
+                return "CraterDropMarkAndPark";
             case CRATER_TRIP_LEFT_SHORT:
                 return "CraterLeftShort";
             case CRATER_TRIP_CENTER_SHORT:
@@ -1464,6 +1519,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 return getDriveMode(CraterTripRight, t);
             case CRATER_TRIP_RIGHT_SINGLE_SAMPLE:
                 return getDriveMode (CraterTripRightSingleSample, t);
+            case CRATER_TRIP_DROP_MARK_AND_PARK:
+                return getDriveMode (CraterTripDropMarkAndPark, t);
             case CRATER_TRIP_RIGHT_DOUBLE_SAMPLE:
                 return getDriveMode (CraterTripRightDoubleSample, t);
             case CRATER_TRIP_LEFT_SHORT:
