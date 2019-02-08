@@ -42,7 +42,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.List;
 
 @TeleOp(name = "Y18 TensorFlow Object Detection Webcam", group = "Concept")
-// @Disabled
+@Disabled
 public class Y18ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
