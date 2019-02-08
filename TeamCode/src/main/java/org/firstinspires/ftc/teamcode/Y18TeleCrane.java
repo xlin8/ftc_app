@@ -370,31 +370,38 @@ public class Y18TeleCrane extends Y18CommonCrane
                } 
 */
             }
-            if( !manual_crane_control && (a1_cnt_%2==1 || x1_cnt_%2==1) ) {
-               if( x1_cnt_%2 == 1 ) {
+            if( !manual_crane_control && (a1_cnt_%2==1 || x1_cnt_%2==1 || a2_cnt_%2==1 || x2_cnt_==1) ) {
+               if( x1_cnt_%2 == 1 || x2_cnt_%2 == 1 ) {
                   crane_tg_enc = CRANE_COLLECT_POS; 
                   a1_cnt_ = b1_cnt_ = 0; 
+                  a2_cnt_ = b2_cnt_ = 0; 
                   if( AUTO_SWEEPER ) {
-                     if( lb1_cnt_==0 && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
+                     if( (lb1_cnt_==0 || lb2_cnt_==0) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
                         lb1_cnt_ = 1;
+                        lb2_cnt_ = 1;
                      } 
                   } else {
                      lb1_cnt_ = 0;   // start with sweep in
+                     lb2_cnt_ = 0;   // start with sweep in
                   }
                   crane_arm_dump_start_t = 0.0; 
-               } else if ( a1_cnt_%2 == 1 ) {
+               } else if ( a1_cnt_%2 == 1 || a2_cnt_%2 == 1) {
                   if( crane_tg_enc == CRANE_DUMP_POS ) {
                      // keep it at DUMP
                   } else {
                      crane_tg_enc = CRANE_UP_POS; 
                   }
                   b1_cnt_ = x1_cnt_ = 0; 
-                  if( lb1_cnt_==1 ) {
+                  b2_cnt_ = x2_cnt_ = 0; 
+                  if( lb1_cnt_==1 || lb2_cnt_==1 ) {
                      lb1_cnt_ = 2;    // stop sweeper, and ready for reverse
+		     lb2_cnt_ = 2;
                   }
-                  if( gamepad1.b ) {
+                  if( gamepad1.b || gamepad2.b ) {
                      crane_tg_enc = CRANE_DUMP_POS; 
-                  }
+                  } else {
+                     crane_tg_enc = CRANE_UP_POS; 
+		  }
                }
             }
             crane_tg_enc = (int)(Range.clip(crane_tg_enc,0,MAX_CRANE_ENC_COUNT));
@@ -442,7 +449,7 @@ public class Y18TeleCrane extends Y18CommonCrane
             }
 
             if( USE_CRANE_ARM ) {
-               if( gamepad1.b ) {
+               if( gamepad1.b || gamepad2.b ) {
                   if( TIMED_CRANE_ARM_DUMP ) {
                      // timed smooth dumping
                      if( crane_enc>CRANE_ARM_DUMP_ENC_RATIO*crane_tg_enc ) {
@@ -462,6 +469,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                      servo_crane_arm_pos_ = CRANE_ARM_DUMP; 
                   } 
                   lb1_cnt_=0;  // stop sweeper
+                  lb2_cnt_=0;  // stop sweeper
                } else { 
                   servo_crane_arm_pos_ = CRANE_ARM_COLLECT; 
                }
@@ -558,18 +566,13 @@ public class Y18TeleCrane extends Y18CommonCrane
       }
 
       if( USE_SWEEPER ) {
-         if( y1_cnt_%2==1 ) { 
-            // use the manually adjusted power
-            lb1_cnt_ = 0; 
-         } else { 
-            // use left bummper to control sweeper
-            if( lb1_cnt_%4==1 ) {
-               power_sweeper_ = SWEEP_IN_POWER; 
-            } else if( lb1_cnt_%4==3 ) {
-               power_sweeper_ = SWEEP_OUT_POWER; 
-            } else {
-               power_sweeper_ = 0 ; 
-            }
+         // use left bummper to control sweeper
+         if( lb1_cnt_%4==1 || lb2_cnt_%4==1 ) {
+            power_sweeper_ = SWEEP_IN_POWER; 
+         } else if( lb1_cnt_%4==3 || lb2_cnt_%4==3 ) {
+            power_sweeper_ = SWEEP_OUT_POWER; 
+         } else {
+            power_sweeper_ = 0 ; 
          }
          power_sweeper_ = Range.clip(power_sweeper_,-1,1);
          motor_sweeper_.setPower(power_sweeper_); 

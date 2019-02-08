@@ -232,7 +232,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
             // 1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
-            0.75, DRIVE_FORWARD_ENC,
+            //0.75, DRIVE_FORWARD_ENC,
+            0.60, DRIVE_FORWARD_ENC,
             //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
             //0.1, DRIVE_RESET_ENC_DONE,
             //0.5, DRIVE_FORWARD_ENC_TO_WALL,
@@ -306,7 +307,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
-            0.7, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_FORWARD_ENC,
             //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
             //0.1, DRIVE_RESET_ENC_DONE,
             //0.5, DRIVE_FORWARD_ENC_TO_WALL,
