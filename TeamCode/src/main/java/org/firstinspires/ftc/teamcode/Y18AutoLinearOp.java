@@ -17,8 +17,6 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-// todo : search : Aditi
-
 ///  Autonomous Run for League Meet0
 @Autonomous(name="Y18Crater", group="GG")
 // @Disabled

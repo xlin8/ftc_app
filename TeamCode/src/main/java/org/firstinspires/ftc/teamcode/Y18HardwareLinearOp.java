@@ -81,7 +81,11 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // Front linear slide
     DcMotor motorMineralFlip1_;
     DcMotor motorMineralFlip2_;
-    static final boolean USE_MINERAL_FLIP = false;
+    static final boolean USE_MINERAL_FLIP = true;
+    int MINERAL_FLIP_DUMP_POS = 1000;
+    int MINERAL_FLIP_UP_POS = 800;
+    int MINERAL_FLIP_COLLECT_POS = 0;
+
 
     // Intake motor
     DcMotor motorIntake_;
@@ -92,8 +96,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     // motor extention
     Servo servoExtention_;
-    static final boolean USE_EXTENTION = false;
-    static final double SERVO_EXTENTION_INIT_POSITION = 0;
+    static final boolean USE_EXTENTION = true;
+    static final double SERVO_EXTENTION_INIT_POSITION = 0.5;             //off
+    static final double SERVO_EXTENTION_OUT_POSITION = 0;
+
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
@@ -111,6 +117,9 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
     static final boolean USE_MAG_SWITCH = true;            
     DigitalChannel magSwitch_;                        // REV magnetic switch
+
+    static final boolean USE_MAG_EXTENTION_SWITCH = true;                   //added by Aditi feb 10th
+    DigitalChannel magExtentionSwitch_;               // REV magnetic switch
 
     LynxI2cColorRangeSensor rev_rgb_range_;                // REV color/range sensor2
     static final boolean USE_RGB_FOR_DEPOT_LINE = false;    // true for detecting depot border before dropping marker
@@ -150,12 +159,16 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         motorRF_.setPower(0);
         motorRB_.setPower(0);
 
+
+
         if (USE_MINERAL_FLIP) {
             motorMineralFlip1_ = hardwareMap.dcMotor.get("motorMineralsFlip1");
             motorMineralFlip1_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motorMineralFlip1_.setDirection(DcMotor.Direction.REVERSE);
 
             motorMineralFlip2_ = hardwareMap.dcMotor.get("motorMineralsFlip2");
             motorMineralFlip2_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motorMineralFlip2_.setDirection(DcMotor.Direction.REVERSE);
         }
 
         if (USE_MOTOR_INTAKE){
@@ -193,8 +206,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
         if (USE_SERVO_LIFT_PIN) {
             servoLiftPin_ = hardwareMap.servo.get("servoLiftPin");
-            servoLiftPinPos_ = LIFT_PIN_INIT_POS;
-            servoLiftPin_.setPosition(servoLiftPinPos_);
+            //servoLiftPinPos_ = LIFT_PIN_INIT_POS;                        //affecting tele init
+            //servoLiftPin_.setPosition(servoLiftPinPos_);
         }
 
 
@@ -221,6 +234,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         if (USE_MAG_SWITCH) {
            magSwitch_ =  hardwareMap.get(DigitalChannel.class, "mag_switch");
            magSwitch_.setMode(DigitalChannelController.Mode.INPUT);
+        }
+        if(USE_MAG_EXTENTION_SWITCH){                                                 //Added by Aditi feb 10th
+            magExtentionSwitch_ = hardwareMap.get(DigitalChannel.class, "Mag_Extention_Switch");
+            magExtentionSwitch_.setMode(DigitalChannelController.Mode.INPUT);
         }
 
         timer_.reset();

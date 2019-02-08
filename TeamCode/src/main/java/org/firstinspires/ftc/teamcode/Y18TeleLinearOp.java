@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //y for intake servos - in, out, and off - cont. servos - done and compiles
 //b for dumping servo, down and up - 180 servo - done and compiles
 //right(down) and left(up) bumpers for winch (servo) that lifts up/down the entire pickup mechanism - not using toggles because they give analog value...
-//left toggle for linear slide (intake)
+//left toggle for linear slide (intake) - flippy todo : program
 //right toggle for extention linear slide (intake)  todo : program
 // D-pad for landing lin-slide (up/down)
 //a for lowest-ish mineral linear slide position
@@ -23,6 +23,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //right toggle for extension intake linear slide
 //right trigger driver 2 = compact front linear slide, intake off, winch up
 //left trigger driver 1 = manual pulling of the servo pin
+
+//todo : x = collect, a = up, b = dump
 
 
 @TeleOp(name="Y18TeleLinearOp", group="GG")
@@ -54,6 +56,8 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     int [] rsbCnt_={0, 0};               // number of times right_joystick is pressed for pads 1 and 2
 
     double [] lastButtonPressTime_={0.0, 0.0};
+
+    static boolean IntakeOnFlag = false;            //manages the intake on automatic sequences - added by Aditi Feb 10th 2019
 
     @Override
     public void runOpMode() {
@@ -94,8 +98,17 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             motorIntake_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
+        if (USE_MINERAL_FLIP){
+            motorMineralFlip1_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorMineralFlip2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+
         if(USE_SERVO_MARKER){
             servoMarker_.setPosition(MARKER_DROP_POS);               //dumping pos.
+        }
+
+        if(USE_SERVO_LIFT_PIN){
+            servoLiftPin_.setPosition(LIFT_PIN_PULL_POS);              //pulled pos.
         }
 
     }
@@ -109,7 +122,13 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         motorRF_.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRB_.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
+        if(USE_LIFT) {
+            motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
+        }
+
+        if (USE_MOTOR_INTAKE){
+            motorIntake_.setMode( DcMotor.RunMode.RUN_USING_ENCODER );
+        }
     }
 
     void cleanUpAtEndOfRun() {
@@ -128,18 +147,24 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
         driveLiftMotor();
 
-        driveLiftMotor();
-
         driveIntakeSweeper();
 
-        dumpMinerals();
+        //dumpMinerals();
 
         dropMarker();
+
+        driveMineralsLiftExtention();
+
+        driveCollectMineralsPos();
+
+        driveDumpMineralsPos();
+
+        driveUpMineralsPos();
 
     }
 
     void checkPressedButton(int pad_id) {
-        if ((currTime_ - lastButtonPressTime_[pad_id]) > MIN_BUTTON_INTERVAL) return;
+        if ((currTime_ - lastButtonPressTime_[pad_id]) < MIN_BUTTON_INTERVAL) return;
 
         Gamepad game_pad=(pad_id==0)?gamepad1:gamepad2;
 
@@ -379,38 +404,30 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         if (USE_LIFT) {
             liftPower_ = 0.0;
 
-            if (gamepad1.dpad_up || gamepad2.dpad_up) { // raise lift
+            if (gamepad1.dpad_up) { // raise lift
                 liftPower_ = LIFT_UP_POWER;
-            } else if (gamepad1.dpad_down || gamepad2.dpad_down) {  // lower lift
+            } else if (gamepad1.dpad_down) {  // lower lift
                 liftPower_ = LIFT_DOWN_POWER;
             }
             motorLift_.setPower(liftPower_);
         }
     }
 
-    void driveIntakeSweeper(){
+    void driveIntakeSweeper(){                                    // feb 9th Aditi
         if(USE_MOTOR_INTAKE){
-            if (yCnt_[1] % 4 == 1) {
+            if (yCnt_[1] % 4 == 1 ) {
                 motorIntake_.setPower(INTAKE_POWER_IN);
             } else if (yCnt_[1] % 4 == 3) {
                 motorIntake_.setPower(INTAKE_POWER_OUT);
             } else {
                 motorIntake_.setPower(INTAKE_POWER_BRAKE);
             }
+            telemetry.addData("Intake Power", ": " + (yCnt_[1]) + ", Power=" + String.valueOf(motorIntake_.getPower()));
+            telemetry.update();
         }
     }
 
-    void dumpMinerals(){
-        if (USE_SERVO_DUMP){
-            if (gamepad2.b) {
-                servoDump_.setPosition(DUMP_UP);
-            } else {
-                servoDump_.setPosition(DUMP_COLLECTION);
-            }
-        }
-    }
-
-    void dropMarker(){
+    void dropMarker(){                                            //feb 7th Aditi
         //Todo : do we need this in case Auto doesn't work?
         if (USE_SERVO_MARKER){
             if (gamepad1.a) {
@@ -422,37 +439,132 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         }
     }
 
+    void driveMineralsLiftExtention(){
+        if (USE_EXTENTION) {                                          //Feb 10th Aditi
+            double Extention_Power = 0.5;
+            if (gamepad2.dpad_up) {
+                rbCnt_[1] = 0;
+                Extention_Power = 1.0;                 //out / pos
+            } else if (gamepad2.dpad_down) {
+                rbCnt_[1] = 0;
+                Extention_Power = 0.0;                 //in / neg.
+            }else if (aCnt_[1] % 2 == 1){                           //means "if it is in a/up mode"
+                Extention_Power = 0.6;                 //off
+            }else if (bCnt_[1] % 2 == 1){                           //means "if it is in b/dump mode"
+                Extention_Power = 0.6;                 //off
+            } else if (xCnt_[1] % 2 == 1){                           //means "if it is in x/collection mode"
+                Extention_Power = 0.5;                 //off
+            }
 
-//    void driveMineralsLiftExtention(){
-//        if (USE_EXTENTION) {
-//            //todo - servo/motor??
-//        }
-//    }
-//
-//    void driveMineralFlippy(){
-//        if(USE_MINERAL_FLIP) {
-//            //todo - 2 motors??
-//        }
-//    }
+            if (USE_MAG_EXTENTION_SWITCH) {
+                if (rbCnt_[1] == 1) {
+                    if (magExtentionSwitch_.getState() == true) {             //if false, means the magnet is nearby, means it has reached the top.
+                        Extention_Power = 0.6;
+                    }
+                }
+            }
+            //if none of the above conditions are true, then:
+            //         - the contraption must be at position a(up) or b(dump)
+            //         - a constant of 0.6 is provided for holding power
+            servoExtention_.setPosition(Extention_Power);
+            telemetry.addData("Extention Power", ", Power=" + String.valueOf(servoExtention_.getPosition()));
 
-////    //todo : automated sequences
-//    void driveCollectMineralsPos(){  //a = collect pos.
-//        if (USE_MOTOR_INTAKE && USE_EXTENTION && USE_MINERAL_FLIP) {
-//            if(aCnt_[1] % 2 == 0){
-//            motorIntake_.setPower(INTAKE_POWER_IN);
-//            {
-//        }
-//    }
+        }
+    }
 
-//    void driveDumpMineralsPos(){       //x = dump pos.
-//
-//    }
-//
-//    void driveCompactPos(){
-//        //do we need this?
-//    }
-//
+    /*void dumpMinerals(){
+        if (USE_SERVO_DUMP){
+            if (gamepad2.b) {
+                servoDump_.setPosition(DUMP_UP);
+            } else {
+                servoDump_.setPosition(DUMP_COLLECTION);
+            }
+        }
+    }*/
 
+//todo : x = collect, a = up, b = dump
+
+ //todo : automated sequences
+    void driveCollectMineralsPos(){                                         //Aditi feb 9th
+        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {                 //&& USE_EXTENTION
+            if(xCnt_[1] % 2 == 1){
+                bCnt_[1] = 0;
+                aCnt_[1] = 0;
+
+                if (IntakeOnFlag != true) {
+                    yCnt_[1] = 1;          //automatically sets to intake
+                    IntakeOnFlag = true;
+                }
+
+                //servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+
+                    motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
+                    motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
+                    motorMineralFlip1_.setPower(0.3);
+                    motorMineralFlip2_.setPower(0.3);
+
+                servoDump_.setPosition(DUMP_COLLECTION);
+            }
+        }
+    }
+
+    void driveDumpMineralsPos(){                                                  //Aditi feb 9th
+        if (USE_MOTOR_INTAKE  && USE_MINERAL_FLIP && USE_SERVO_DUMP) {                 //&& USE_EXTENTION
+            if(bCnt_[1] % 2 == 1){
+                aCnt_[1] = 0;
+                xCnt_[1] = 0;
+
+                if (IntakeOnFlag != false) {
+                    yCnt_[1] = 2;          //automatically sets to off
+                    IntakeOnFlag = false;
+                }
+
+                //servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+
+                    motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
+                    motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
+                    motorMineralFlip1_.setPower(0.2);
+                    motorMineralFlip2_.setPower(0.2);
+
+                if (motorMineralFlip1_.getCurrentPosition() > (MINERAL_FLIP_DUMP_POS - 20)){
+                    if(gamepad2.b){
+                         servoDump_.setPosition(DUMP_UP);
+                    } else{
+                         servoDump_.setPosition(DUMP_COLLECTION);
+                    }
+                    telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
+                }
+            }
+        }
+    }
+
+    void driveUpMineralsPos(){                                                  // Aditi feb 9th
+        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {                   //&& USE_EXTENTION
+            if(aCnt_[1] % 2 == 1){
+                bCnt_[1] = 0;
+                xCnt_[1] = 0;
+
+                if (IntakeOnFlag != false) {
+                    yCnt_[1] = 2;          //automatically sets to off
+                    IntakeOnFlag = false;
+                }
+
+                //servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+
+                    motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_UP_POS);
+                    motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_UP_POS);
+                    motorMineralFlip1_.setPower(0.3);
+                    motorMineralFlip2_.setPower(0.3);
+
+                servoDump_.setPosition(DUMP_COLLECTION);
+            }
+        }
+    }
+
+/*    void driveCompactPos(){
+        //do we need this?
+    }
+*/
 
 }
 
