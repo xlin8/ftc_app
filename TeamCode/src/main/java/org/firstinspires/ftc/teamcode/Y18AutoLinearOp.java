@@ -459,13 +459,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.2, DRIVE_BACKWARD_ENC,
+            0.15, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            57, DRIVE_TURN_LEFT_ENC,            //todo : check angle, drop marker or turn first?
+            52, DRIVE_TURN_LEFT_ENC,            //todo : check angle, drop marker or turn first?
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.6, DRIVE_FORWARD_ENC,
+            0.55, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             20, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
