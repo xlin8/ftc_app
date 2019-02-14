@@ -85,7 +85,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double MAX_WALL_DISTANCE = 17.5;           // max distance to wall; distance higher than this will trigger re-alignment
     static final double MAX_DISTANCE_RANGE = 199.9;         // any distance larger than this value will be consider as invalid reading, for REV 2M range sensor
-    static final double SEE_WALL_DISTANCE = 50.0;           // wall distance to stop for team marker delivery
+    static final double CRATER_SEE_WALL_DISTANCE = 50.0;    // wall distance to stop for team marker delivery
+    static final double DEPOT_SEE_WALL_DISTANCE = 110.0;
 
     // Mineral detector
     VuforiaLocalizer vuforia_;
@@ -397,7 +398,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.75, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            0.1, DRIVE_BACKWARD_ENC,
+            0.2, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             145, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -405,7 +406,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_GEAR,                     //speeds up by 1.5x reg.
             0.1, DRIVE_RESET_ENC_DONE,
-            1.7, DRIVE_FORWARD_ENC,
+            1.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC_TO_WALL,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -415,18 +418,25 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             // Current version is of 1/05/2018
 
             0.1, DRIVE_RESET_ENC_DONE,
-            1.7, DRIVE_FORWARD_ENC,
+            1.6, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            135, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.1, DRIVE_FORWARD_ENC,
+            0.2, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            60, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            65, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.92, DRIVE_FORWARD_ENC,
+            1.4, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.3, DRIVE_FORWARD_ENC_TO_WALL,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -437,31 +447,34 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            35, DRIVE_TURN_RIGHT_ENC,
+            45, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.05, DRIVE_FORWARD_ENC,
+            1.0, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            75, DRIVE_TURN_LEFT_ENC,
+            0.15, DRIVE_BACKWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            80, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.8, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.1, DRIVE_BACKWARD_ENC,
+            0.2, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            70, DRIVE_TURN_LEFT_ENC,            //todo : check angle, drop marker or turn first?
+            57, DRIVE_TURN_LEFT_ENC,            //todo : check angle, drop marker or turn first?
             0.1, DRIVE_RESET_ENC_DONE,
-            // 0.2, DRIVE_FORWARD_ENC,
-            // 0.1, DRIVE_RESET_ENC_DONE,
-            // 2.5, DRIVE_SHIFT_RIGHT,
-            // 0.1, DRIVE_RESET_ENC_DONE,
-            // 0.2, DRIVE_FORWARD_ENC,
-            // 0.1, DRIVE_RESET_ENC_DONE,
-            // 0.5, DRIVE_SHIFT_RIGHT,
-            // 0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            2.1, DRIVE_FORWARD_ENC,
+            0.6, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            20, DRIVE_TURN_LEFT_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.0, DRIVE_SHIFT_RIGHT,
+            1.8, DRIVE_SHIFT_GEAR,
+            0.1, DRIVE_RESET_ENC_DONE,
+            1.3, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.2, DRIVE_FORWARD_ENC_TO_WALL,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -1101,17 +1114,17 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         if (curr_mode == DRIVE_BACKWARD_ENC_TO_WALL || curr_mode == DRIVE_FORWARD_ENC_TO_WALL) {
             if( revRange_ != null) {
                 double dis = revRange_.getDistance(DistanceUnit.CM);
-                if( dis > 10.0 && dis < 100.0 ) {   // valid reading
-                    if (dis < SEE_WALL_DISTANCE) {  // stop 50cm away from the wall for team marker delivery
-                        return gotoNextState(states, time, true);
+                if( dis > 10.0 && dis < 150.0 ) {   // valid reading
+                    if (isCraterTripFlag_ == true) {
+                        if (dis < CRATER_SEE_WALL_DISTANCE) {  // stop 50cm away from the wall for team marker delivery
+                            return gotoNextState(states, time, true);
+                        }
+                    } else {
+                        if (dis < DEPOT_SEE_WALL_DISTANCE) {
+                            return gotoNextState(states, time, true);
+                        }
                     }
-                }
-            } else if( mrRange_ != null) {
-                double dis = mrRange_.getDistance(DistanceUnit.CM);
-                if (dis > 0.0) {
-                    if (dis < SEE_WALL_DISTANCE) {  // stop 50cm away from the wall for team marker delivery
-                        return gotoNextState(states, time, true);
-                    }
+
                 }
             }
         } else if( curr_mode == DRIVE_BACKWARD_ENC_CRATER && magSwitch_!=null ) {
