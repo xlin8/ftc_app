@@ -100,7 +100,6 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double SERVO_EXTENTION_INIT_POSITION = 0.5;             //off
     static final double SERVO_EXTENTION_OUT_POSITION = 0;
 
-
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
