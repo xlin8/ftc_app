@@ -1157,7 +1157,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     }
 
     void raisingTheFlippingArm (){
-        if(currTime_ >= AUTO_LIFT_FLIPPING_ARM_TIME) {
+        if (currTime_ >= AUTO_LIFT_FLIPPING_ARM_TIME) {
             if (currTime_ <= (AUTO_LIFT_FLIPPING_ARM_TIME + TIME_TO_LIFT_FLIPPING_ARM)) {
                 motorMineralFlip1_.setTargetPosition(FLIP_LIFT_POS);
                 motorMineralFlip2_.setTargetPosition(FLIP_LIFT_POS);
@@ -1170,6 +1170,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 motorMineralFlip2_.setPower(0.0);
 
                 servoExtention_.setPosition(CR_SERVO_STOP);
+            }
+
+            if (isCraterTripFlag_ == false){
+                //servoLittleStabWheels_.setPosition
             }
         }
     }

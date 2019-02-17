@@ -199,6 +199,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
         if (USE_LIL_STAB_WHEELS){
             servoLittleStabWheels_ = hardwareMap.servo.get("servoLittleStabWheels_");
+            servoLittleStabWheels_.setPosition(STAB_WHEELS_TELE_INIT_POSITION);
         }
 
         if( USE_RGB_FOR_DEPOT_LINE ) {
