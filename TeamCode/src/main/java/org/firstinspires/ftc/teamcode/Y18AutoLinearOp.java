@@ -86,6 +86,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double CRATER_SEE_WALL_DISTANCE = 50.0;    // wall distance to stop for team marker delivery
     static final double DEPOT_SEE_WALL_DISTANCE = 110.0;
 
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME = 25;   // 25 seconds into autonomous, lift the flipping arm
+    static final double TIME_TO_LIFT_FLIPPING_ARM = 2.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
+    double motorFlippyPower_ = 0.2;
+    int FLIP_LIFT_POS = 200;
+
     // Mineral detector
     VuforiaLocalizer vuforia_;
     TFObjectDetector tfod_;
@@ -580,6 +585,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         while (opModeIsActive()) {
             driveRobot();
+            raisingTheFlippingArm();
         }
 
         cleanUpAtEndOfRun();
@@ -1148,6 +1154,28 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         }
 
         return curr_mode;
+    }
+
+    void raisingTheFlippingArm (){
+        if (currTime_ >= AUTO_LIFT_FLIPPING_ARM_TIME) {
+            if (currTime_ <= (AUTO_LIFT_FLIPPING_ARM_TIME + TIME_TO_LIFT_FLIPPING_ARM)) {
+                motorMineralFlip1_.setTargetPosition(FLIP_LIFT_POS);
+                motorMineralFlip2_.setTargetPosition(FLIP_LIFT_POS);
+                motorMineralFlip1_.setPower(motorFlippyPower_);
+                motorMineralFlip2_.setPower(motorFlippyPower_);
+
+                servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+            } else {
+                motorMineralFlip1_.setPower(0.0);
+                motorMineralFlip2_.setPower(0.0);
+
+                servoExtention_.setPosition(CR_SERVO_STOP);
+            }
+
+            if (isCraterTripFlag_ == false){
+                //servoLittleStabWheels_.setPosition
+            }
+        }
     }
 
     int getDriveModeWhenAtDriveForwardUsingEncoderAndDetectDepot(int curr_mode,

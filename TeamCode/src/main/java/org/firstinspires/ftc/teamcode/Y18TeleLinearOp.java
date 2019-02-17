@@ -503,9 +503,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         }
     }*/
 
-//todo : x = collect, a = up, b = dump
 
- //todo : automated sequences
     void driveCollectMineralsPos(){                                         //Aditi feb 9th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(xCnt_[1] % 2 == 1){
