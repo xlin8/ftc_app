@@ -82,10 +82,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     DcMotor motorMineralFlip1_;
     DcMotor motorMineralFlip2_;
     static final boolean USE_MINERAL_FLIP = true;
-    int MINERAL_FLIP_DUMP_POS = 1000;
-    int MINERAL_FLIP_UP_POS = 800;
+    int MINERAL_FLIP_DUMP_POS = 1100;               //was 1000, 1150
+    int MINERAL_FLIP_UP_POS = 900;                //was 800, 1000
     int MINERAL_FLIP_COLLECT_POS = 0;
-
+    int MINERAL_FLIP_HOVER_POS = 200;
 
     // Intake motor
     DcMotor motorIntake_;
@@ -100,6 +100,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double SERVO_EXTENTION_INIT_POSITION = 0.5;             //off
     static final double SERVO_EXTENTION_OUT_POSITION = 0;
 
+    //little stabilizer wheels
+    Servo servoLittleStabWheels_;
+    static final boolean USE_LIL_STAB_WHEELS = true;
+    static final double STAB_WHEELS_TELE_INIT_POSITION = 1.0;           //need to edit
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
@@ -193,6 +197,9 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             servoMarker_.setPosition(MARKER_UP_POS);
         }
 
+        if (USE_LIL_STAB_WHEELS){
+            servoLittleStabWheels_ = hardwareMap.servo.get("servoLittleStabWheels_");
+        }
 
         if( USE_RGB_FOR_DEPOT_LINE ) {
             rev_rgb_range_ = hardwareMap.get(LynxI2cColorRangeSensor.class, "rgb_depot_line");
@@ -209,7 +216,6 @@ public class Y18HardwareLinearOp extends LinearOpMode {
             //servoLiftPinPos_ = LIFT_PIN_INIT_POS;                        //affecting tele init
             //servoLiftPin_.setPosition(servoLiftPinPos_);
         }
-
 
         if (USE_IMU) {
             parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
