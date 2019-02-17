@@ -111,6 +111,10 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             servoLiftPin_.setPosition(LIFT_PIN_PULL_POS);              //pulled pos.
         }
 
+        if(USE_LIL_STAB_WHEELS){
+            servoLittleStabWheels_.setPosition(STAB_WHEELS_TELE_INIT_POSITION);
+        }
+
     }
 
     void initializeWhenStart() {
@@ -160,6 +164,10 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         driveDumpMineralsPos();
 
         driveUpMineralsPos();
+
+        driveLittleStabilizerWheels();
+
+        driveHoverMineralsPos();
 
     }
 
@@ -438,6 +446,17 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             }
         }
     }
+    void driveLittleStabilizerWheels(){
+        if (USE_LIL_STAB_WHEELS){
+            if (gamepad2.left_trigger > 0.5){
+              servoLittleStabWheels_.setPosition(1.0);
+            }
+            else if (gamepad2.right_trigger > 0.5){
+              servoLittleStabWheels_.setPosition(0.7);
+            }
+        }
+        // multi rotational servos , controlled by left bumper
+    }
 
     void driveMineralsLiftExtention(){
         if (USE_EXTENTION) {                                          //Feb 10th Aditi
@@ -448,11 +467,13 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             } else if (gamepad2.dpad_down) {
                 rbCnt_[1] = 0;
                 Extention_Power = 0.0;                 //in / neg.
-            }else if (aCnt_[1] % 2 == 1){                           //means "if it is in a/up mode"
+            }else if (aCnt_[1] % 2 == 1){                             //means "if it is in a/up mode"
                 Extention_Power = 0.6;                 //off
-            }else if (bCnt_[1] % 2 == 1){                           //means "if it is in b/dump mode"
+            }else if (bCnt_[1] >= 1){                                 //means "if it is in b/dump mode"
                 Extention_Power = 0.6;                 //off
-            } else if (xCnt_[1] % 2 == 1){                           //means "if it is in x/collection mode"
+            } else if (xCnt_[1] % 2 == 1){                            //means "if it is in x/collection mode"
+                Extention_Power = 0.5;                 //off
+            } else if (yCnt_[0] % 2 == 1){                            // mans "if it is in y/hover mode"
                 Extention_Power = 0.5;                 //off
             }
 
@@ -484,17 +505,16 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
 
     void driveCollectMineralsPos(){                                         //Aditi feb 9th
-        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {                 //&& USE_EXTENTION
+        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(xCnt_[1] % 2 == 1){
                 bCnt_[1] = 0;
                 aCnt_[1] = 0;
+                yCnt_[0] = 0;
 
                 if (IntakeOnFlag != true) {
                     yCnt_[1] = 1;          //automatically sets to intake
                     IntakeOnFlag = true;
                 }
-
-                //servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
 
                     motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
                     motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
@@ -506,18 +526,60 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         }
     }
 
-    void driveDumpMineralsPos(){                                                  //Aditi feb 9th
-        if (USE_MOTOR_INTAKE  && USE_MINERAL_FLIP && USE_SERVO_DUMP) {                 //&& USE_EXTENTION
-            if(bCnt_[1] % 2 == 1){
-                aCnt_[1] = 0;
+    void driveHoverMineralsPos(){                                                  // Aditi feb 16th
+        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
+            if(yCnt_[0] % 2 == 1){
+                bCnt_[1] = 0;
                 xCnt_[1] = 0;
+                aCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 2;          //automatically sets to off
                     IntakeOnFlag = false;
                 }
 
-                //servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+                motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_HOVER_POS);
+                motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_HOVER_POS);
+                motorMineralFlip1_.setPower(0.3);
+                motorMineralFlip2_.setPower(0.3);
+
+                servoDump_.setPosition(DUMP_COLLECTION);
+            }
+        }
+    }
+
+    void driveUpMineralsPos(){                                                  // Aditi feb 9th
+        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
+            if(aCnt_[1] % 2 == 1){
+                bCnt_[1] = 0;
+                xCnt_[1] = 0;
+                yCnt_[0] = 0;
+
+                if (IntakeOnFlag != false) {
+                    yCnt_[1] = 0;          //automatically sets to off
+                    IntakeOnFlag = false;
+                }
+                motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_UP_POS);
+                motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_UP_POS);
+                motorMineralFlip1_.setPower(0.2);
+                motorMineralFlip2_.setPower(0.2);
+
+                servoDump_.setPosition(DUMP_COLLECTION);
+            }
+        }
+    }
+
+    void driveDumpMineralsPos(){                                                  //Aditi feb 9th
+        if (USE_MOTOR_INTAKE  && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
+            if(bCnt_[1] >= 1){
+                aCnt_[1] = 0;
+                xCnt_[1] = 0;
+                yCnt_[0] = 0;
+
+                if (IntakeOnFlag != false) {
+                    yCnt_[1] = 2;          //automatically sets to off
+                    IntakeOnFlag = false;
+                }
 
                     motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
                     motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
@@ -532,29 +594,6 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                     }
                     telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
                 }
-            }
-        }
-    }
-
-    void driveUpMineralsPos(){                                                  // Aditi feb 9th
-        if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {                   //&& USE_EXTENTION
-            if(aCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                xCnt_[1] = 0;
-
-                if (IntakeOnFlag != false) {
-                    yCnt_[1] = 2;          //automatically sets to off
-                    IntakeOnFlag = false;
-                }
-
-                //servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
-
-                    motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_UP_POS);
-                    motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_UP_POS);
-                    motorMineralFlip1_.setPower(0.3);
-                    motorMineralFlip2_.setPower(0.3);
-
-                servoDump_.setPosition(DUMP_COLLECTION);
             }
         }
     }
