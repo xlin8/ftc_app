@@ -97,13 +97,16 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // motor extention
     Servo servoExtention_;
     static final boolean USE_EXTENTION = true;
-    static final double SERVO_EXTENTION_INIT_POSITION = 0.5;             //off
-    static final double SERVO_EXTENTION_OUT_POSITION = 0;
+    static final double SERVO_EXTENTION_INIT_POSITION = CR_SERVO_STOP;             //off
+    static final double SERVO_EXTENTION_OUT_POSITION = 1.0;
+    static final double SERVO_EXTENTION_IN_POSITION = 0.0;
+    static final double SERVO_EXTENTION_HOLDING_POSITION = 0.6;
 
     //little stabilizer wheels
     Servo servoLittleStabWheels_;
     static final boolean USE_LIL_STAB_WHEELS = true;
-    static final double STAB_WHEELS_TELE_INIT_POSITION = 1.0;           //need to edit
+    static final double STAB_WHEELS_INIT_POSITION = 1.0;
+    static final double STAB_WHEELS_OUT_POSITION = 0.7;
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
@@ -199,7 +202,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
 
         if (USE_LIL_STAB_WHEELS){
             servoLittleStabWheels_ = hardwareMap.servo.get("servoLittleStabWheels_");
-            servoLittleStabWheels_.setPosition(STAB_WHEELS_TELE_INIT_POSITION);
+            servoLittleStabWheels_.setPosition(STAB_WHEELS_INIT_POSITION);
         }
 
         if( USE_RGB_FOR_DEPOT_LINE ) {

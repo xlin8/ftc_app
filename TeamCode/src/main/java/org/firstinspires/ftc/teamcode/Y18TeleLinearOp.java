@@ -15,8 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //y for intake servos - in, out, and off - cont. servos - done and compiles
 //b for dumping servo, down and up - 180 servo - done and compiles
 //right(down) and left(up) bumpers for winch (servo) that lifts up/down the entire pickup mechanism - not using toggles because they give analog value...
-//left toggle for linear slide (intake) - flippy todo : program
-//right toggle for extention linear slide (intake)  todo : program
+//left toggle for linear slide (intake) - flippy
+//right toggle for extention linear slide (intake)
 // D-pad for landing lin-slide (up/down)
 //a for lowest-ish mineral linear slide position
 //x for highest mineral linear slide position
@@ -112,7 +112,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         }
 
         if(USE_LIL_STAB_WHEELS){
-            servoLittleStabWheels_.setPosition(STAB_WHEELS_TELE_INIT_POSITION);
+            servoLittleStabWheels_.setPosition(STAB_WHEELS_INIT_POSITION);
         }
 
     }
@@ -449,10 +449,10 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     void driveLittleStabilizerWheels(){
         if (USE_LIL_STAB_WHEELS){
             if (gamepad2.left_trigger > 0.5){
-              servoLittleStabWheels_.setPosition(1.0);
+                servoLittleStabWheels_.setPosition(STAB_WHEELS_INIT_POSITION);
             }
             else if (gamepad2.right_trigger > 0.5){
-              servoLittleStabWheels_.setPosition(0.7);
+                servoLittleStabWheels_.setPosition(STAB_WHEELS_OUT_POSITION);
             }
         }
         // multi rotational servos , controlled by left bumper
@@ -460,27 +460,27 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
     void driveMineralsLiftExtention(){
         if (USE_EXTENTION) {                                          //Feb 10th Aditi
-            double Extention_Power = 0.5;
+            double Extention_Power = CR_SERVO_STOP;
             if (gamepad2.dpad_up) {
                 rbCnt_[1] = 0;
-                Extention_Power = 1.0;                 //out / pos
+                Extention_Power = SERVO_EXTENTION_OUT_POSITION;                 //out / pos
             } else if (gamepad2.dpad_down) {
                 rbCnt_[1] = 0;
-                Extention_Power = 0.0;                 //in / neg.
+                Extention_Power = SERVO_EXTENTION_IN_POSITION;                 //in / neg.
             }else if (aCnt_[1] % 2 == 1){                             //means "if it is in a/up mode"
-                Extention_Power = 0.6;                 //off
+                Extention_Power = SERVO_EXTENTION_OUT_POSITION;                 //off
             }else if (bCnt_[1] >= 1){                                 //means "if it is in b/dump mode"
-                Extention_Power = 0.6;                 //off
+                Extention_Power = SERVO_EXTENTION_HOLDING_POSITION;                 //off
             } else if (xCnt_[1] % 2 == 1){                            //means "if it is in x/collection mode"
-                Extention_Power = 0.5;                 //off
+                Extention_Power = CR_SERVO_STOP;                 //off
             } else if (lbCnt_[1] % 2 == 1){                            // mans "if it is in y/hover mode"
-                Extention_Power = 0.5;                 //off
+                Extention_Power = CR_SERVO_STOP;                 //off
             }
 
             if (USE_MAG_EXTENTION_SWITCH) {
                 if (rbCnt_[1] == 1) {
                     if (magExtentionSwitch_.getState() == true) {             //if false, means the magnet is nearby, means it has reached the top.
-                        Extention_Power = 0.6;
+                        Extention_Power = SERVO_EXTENTION_HOLDING_POSITION;
                     }
                 }
             }
@@ -518,7 +518,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
                     motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
                     motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
-                    motorMineralFlip1_.setPower(0.3);
+                    motorMineralFlip1_.setPower(0.3); //TODO: Create a variable
                     motorMineralFlip2_.setPower(0.3);
 
                 servoDump_.setPosition(DUMP_COLLECTION);
@@ -540,7 +540,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
                 motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_HOVER_POS);
                 motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_HOVER_POS);
-                motorMineralFlip1_.setPower(0.3);
+                motorMineralFlip1_.setPower(0.3); //TODO: Create a variable
                 motorMineralFlip2_.setPower(0.3);
 
                 servoDump_.setPosition(DUMP_COLLECTION);
@@ -583,10 +583,10 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
                     motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
                     motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
-                    motorMineralFlip1_.setPower(0.2);
+                    motorMineralFlip1_.setPower(0.2); //TODO: Create variable
                     motorMineralFlip2_.setPower(0.2);
 
-                if (motorMineralFlip1_.getCurrentPosition() > (MINERAL_FLIP_DUMP_POS - 20)){
+                if (motorMineralFlip1_.getCurrentPosition() > (MINERAL_FLIP_DUMP_POS - 20)){ //TODO: Create variable for the twenty
                     if(gamepad2.b){
                          servoDump_.setPosition(DUMP_UP);
                     } else{
