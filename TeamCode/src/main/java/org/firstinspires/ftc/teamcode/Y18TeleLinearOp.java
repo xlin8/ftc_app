@@ -473,7 +473,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                 Extention_Power = 0.6;                 //off
             } else if (xCnt_[1] % 2 == 1){                            //means "if it is in x/collection mode"
                 Extention_Power = 0.5;                 //off
-            } else if (yCnt_[0] % 2 == 1){                            // mans "if it is in y/hover mode"
+            } else if (lbCnt_[1] % 2 == 1){                            // mans "if it is in y/hover mode"
                 Extention_Power = 0.5;                 //off
             }
 
@@ -511,7 +511,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             if(xCnt_[1] % 2 == 1){
                 bCnt_[1] = 0;
                 aCnt_[1] = 0;
-                yCnt_[0] = 0;
+                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != true) {
                     yCnt_[1] = 1;          //automatically sets to intake
@@ -530,7 +530,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
     void driveHoverMineralsPos(){                                                  // Aditi feb 16th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
-            if(yCnt_[0] % 2 == 1){
+            if(lbCnt_[1] % 2 == 1){
                 bCnt_[1] = 0;
                 xCnt_[1] = 0;
                 aCnt_[1] = 0;
@@ -555,7 +555,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             if(aCnt_[1] % 2 == 1){
                 bCnt_[1] = 0;
                 xCnt_[1] = 0;
-                yCnt_[0] = 0;
+                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 0;          //automatically sets to off
@@ -576,7 +576,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             if(bCnt_[1] >= 1){
                 aCnt_[1] = 0;
                 xCnt_[1] = 0;
-                yCnt_[0] = 0;
+                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 2;          //automatically sets to off
