@@ -86,10 +86,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double CRATER_SEE_WALL_DISTANCE = 50.0;    // wall distance to stop for team marker delivery
     static final double DEPOT_SEE_WALL_DISTANCE = 110.0;
 
-    static final double AUTO_LIFT_FLIPPING_ARM_TIME = 25;   // 25 seconds into autonomous, lift the flipping arm
-    static final double TIME_TO_LIFT_FLIPPING_ARM = 2.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
-    double motorFlippyPower_ = 0.2;
-    int FLIP_LIFT_POS = 200;
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME = 26;   // 25 seconds into autonomous, lift the flipping arm
+    static final double TIME_TO_LIFT_FLIPPING_ARM = 4.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
+    double motorFlippyPower_ = 0.3;
+    int FLIP_LIFT_POS = 300;
 
     // Mineral detector
     VuforiaLocalizer vuforia_;
@@ -186,11 +186,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
             1.8, DRIVE_SHIFT_GEAR,
-            //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
             1.0, DRIVE_FORWARD_ENC,
-            //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-            //0.1, DRIVE_RESET_ENC_DONE,
-            //0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -198,10 +194,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double [] CraterTripLeftSingleSample = {
             1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE,
-            //0.2, DRIVE_SHIFT_RIGHT,
-            //0.1, DRIVE_RESET_ENC_DONE,
             0.1, DRIVE_RESET_HEADING,
-            //1.9, DRIVE_BACKWARD_ENC,
             2.0, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
@@ -235,24 +228,16 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            // 1.0, DRIVE_FORWARD_ENC_AND_DET_LINE,
-            //0.75, DRIVE_FORWARD_ENC,
             0.60, DRIVE_FORWARD_ENC,
-            //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-            //0.1, DRIVE_RESET_ENC_DONE,
-            //0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
 
     static final double [] CraterTripDropMarkAndPark = {
             TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-
             0.1, DRIVE_RESET_ENC_DONE,
-            //1.0, DRIVE_SHIFT_GEAR,
             0.5, DRIVE_FORWARD_ENC_TO_WALL,
             0.5, DRIVE_DROP_MARKER,
-
             0.1, DRIVE_RESET_ENC_DONE, 
             0.2, DRIVE_SHIFT_RIGHT,
             2.0, DRIVE_SHIFT_GEAR,
@@ -267,8 +252,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double [] CraterTripCenterSingleSample = {
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            //0.2, DRIVE_SHIFT_RIGHT,
-            //0.1, DRIVE_RESET_ENC_DONE,
             0.1, DRIVE_RESET_HEADING,
             2.0, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -299,9 +282,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.35, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             118, DRIVE_TURN_LEFT_ENC,
-            // 65, DRIVE_TURN_LEFT_ENC,
-            // 0.1, DRIVE_RESET_ENC_DONE,
-            // 60, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.65, DRIVE_SHIFT_GEAR,
             1.30, DRIVE_FORWARD_ENC,
@@ -310,11 +290,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
-            //1.2, DRIVE_FORWARD_ENC_AND_DET_LINE,
             1.0, DRIVE_FORWARD_ENC,
-            //TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
-            //0.1, DRIVE_RESET_ENC_DONE,
-            //0.5, DRIVE_FORWARD_ENC_TO_WALL,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -322,11 +298,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double [] CraterTripRightSingleSample = {
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
-            //0.15, DRIVE_SHIFT_RIGHT,
-            //0.1, DRIVE_RESET_ENC_DONE,
             0.1, DRIVE_RESET_HEADING,
             1.9, DRIVE_SHIFT_GEAR,
-            //1.8, DRIVE_BACKWARD_ENC,
             2.0, DRIVE_BACKWARD_ENC_CRATER,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
@@ -387,9 +360,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
 
     static final double [] DepotTripLeft = {
-
-            // Current version is of 1/05/2018
-
             0.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             40, DRIVE_TURN_LEFT_ENC,
@@ -417,9 +387,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     };
 
     static final double [] DepotTripCenter = {
-
-            // Current version is of 1/05/2018
-
             0.1, DRIVE_RESET_ENC_DONE,
             1.6, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -444,9 +411,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             60.0, DRIVE_STOP
     };
     static final double [] DepotTripRight = {
-
-            // Current version is of 1/05/2018
-
             0.1, DRIVE_RESET_ENC_DONE,
             0.2, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -585,7 +549,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         while (opModeIsActive()) {
             driveRobot();
-            raisingTheFlippingArm();
         }
 
         cleanUpAtEndOfRun();
@@ -617,6 +580,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         if (USE_LIFT) {
             motorLift_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
+        if (USE_MINERAL_FLIP){
+            motorMineralFlip1_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorMineralFlip2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
 
         numDistOk_ = 0;
@@ -673,6 +641,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     void driveRobot() {
         double time_t = timer_.time();
         currTime_ = time_t;
+
+        raisingTheFlippingArm();
 
         int drive_mode = DRIVE_STOP;
 
@@ -1173,9 +1143,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             }
 
             if (isCraterTripFlag_ == false){
-                //servoLittleStabWheels_.setPosition
+                servoLittleStabWheels_.setPosition(STAB_WHEELS_OUT_POSITION);
             }
         }
+
+        // telemetry.addData("Raising arm ", "Time="+String.valueOf(currTime_) + "Flip power = " + String.format("%.2f/%.2f", motorMineralFlip1_.getPower(), motorMineralFlip2_.getPower()));
+        // telemetry.update();
     }
 
     int getDriveModeWhenAtDriveForwardUsingEncoderAndDetectDepot(int curr_mode,
