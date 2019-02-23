@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @Autonomous(name="Y18CraterShort", group="GG")
-//@Disabled
+@Disabled
 public class Y18AutoLinearOpCraterShort extends Y18AutoLinearOp
 {
     @Override
