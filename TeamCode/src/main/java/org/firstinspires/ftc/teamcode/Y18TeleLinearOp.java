@@ -59,6 +59,10 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
     static boolean IntakeOnFlag = false;            //manages the intake on automatic sequences - added by Aditi Feb 10th 2019
 
+    static boolean showCtlInfo_ = false;                   // to show telemetry for a, x, b and lb cnts for flippy position
+
+    static boolean FlippyDisplay_ = true;                   //show curr pos of flippy (only displays flippyMotor1`)
+
     @Override
     public void runOpMode() {
         initialize();
@@ -88,7 +92,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             motorLB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             motorRF_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             motorRB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        }
+        }                                                                            
 
         if(USE_LIFT){
             motorLift_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -99,6 +103,8 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         }
 
         if (USE_MINERAL_FLIP){
+            motorMineralFlip1_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorMineralFlip2_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motorMineralFlip1_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motorMineralFlip2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
@@ -161,7 +167,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
         driveCollectMineralsPos();
 
-        driveDumpMineralsPos();
+       // driveDumpMineralsPos();
 
         driveUpMineralsPos();
 
@@ -179,18 +185,38 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         if (game_pad.x) {
             xCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+           if(pad_id == 1){
+                aCnt_[1] = 0;
+           //   bCnt_[1] = 0;
+                lbCnt_[1] = 0;
+           }
         } else if (game_pad.y) {
             yCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
         } else if (game_pad.a) {
             aCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+            if(pad_id == 1){
+                xCnt_[1] = 0;
+             //   bCnt_[1] = 0;
+                lbCnt_[1] = 0;
+            }
         } else if (game_pad.b) {
             bCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+           /* if(pad_id == 1){
+                aCnt_[1] = 0;
+                xCnt_[1] = 0;
+                lbCnt_[1] = 0;
+            }*/
         } else if (game_pad.left_bumper) {
             lbCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+            if(pad_id == 1){
+                aCnt_[1] = 0;
+                //bCnt_[1] = 0;
+                xCnt_[1] = 0;
+            }
         } else if (game_pad.right_bumper) {
             rbCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
@@ -430,8 +456,8 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             } else {
                 motorIntake_.setPower(INTAKE_POWER_BRAKE);
             }
-            telemetry.addData("Intake Power", ": " + (yCnt_[1]) + ", Power=" + String.valueOf(motorIntake_.getPower()));
-            telemetry.update();
+          //  telemetry.addData("Intake Power", ": " + (yCnt_[1]) + ", Power=" + String.valueOf(motorIntake_.getPower()));
+           // telemetry.update();
         }
     }
 
@@ -488,7 +514,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             //         - the contraption must be at position a(up) or b(dump)
             //         - a constant of 0.6 is provided for holding power
             servoExtention_.setPosition(Extention_Power);
-            telemetry.addData("Extention Power", ", Power=" + String.valueOf(servoExtention_.getPosition()));
+            //telemetry.addData("Extention Power", ", Power=" + String.valueOf(servoExtention_.getPosition()));
 
         }
     }
@@ -498,6 +524,8 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             if (gamepad2.b) {
                 servoDump_.setPosition(DUMP_UP);
             } else {
+
+
                 servoDump_.setPosition(DUMP_COLLECTION);
             }
         }
@@ -507,9 +535,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     void driveCollectMineralsPos(){                                         //Aditi feb 9th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(xCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                aCnt_[1] = 0;
-                lbCnt_[1] = 0;
+//                bCnt_[1] = 0;
+//                aCnt_[1] = 0;
+//                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != true) {
                     yCnt_[1] = 1;          //automatically sets to intake
@@ -522,16 +550,31 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                     motorMineralFlip2_.setPower(0.3);
 
                 servoDump_.setPosition(DUMP_COLLECTION);
+
+                 if (FlippyDisplay_ == true) {                                                                                                                                                                
+                     telemetry.addData("Flippy", ", Pos=" + String.valueOf(motorMineralFlip1_.getCurrentPosition()) + "  TgtPos = " + String.valueOf(motorMineralFlip1_.getTargetPosition()));
+                     telemetry.update();                                                                                                                                                                      
+                 }                                                                                                                                                                                            
             }
         }
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
+        }
     }
+
+
 
     void driveHoverMineralsPos(){                                                  // Aditi feb 16th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(lbCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                xCnt_[1] = 0;
-                aCnt_[1] = 0;
+//                bCnt_[1] = 0;
+//                xCnt_[1] = 0;
+//                aCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 2;          //automatically sets to off
@@ -544,37 +587,98 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                 motorMineralFlip2_.setPower(0.3);
 
                 servoDump_.setPosition(DUMP_COLLECTION);
+
+                if (FlippyDisplay_ == true) {
+                    telemetry.addData("Flippy", ", Pos=" + String.valueOf(motorMineralFlip1_.getCurrentPosition()) + "  TgtPos = " + String.valueOf(motorMineralFlip1_.getTargetPosition()));
+                    telemetry.update();
+                }
+                
             }
+        }
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
         }
     }
 
     void driveUpMineralsPos(){                                                  // Aditi feb 9th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(aCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                xCnt_[1] = 0;
-                lbCnt_[1] = 0;
+//                bCnt_[1] = 0;
+//                xCnt_[1] = 0;
+//                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 0;          //automatically sets to off
                     IntakeOnFlag = false;
                 }
-                motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_UP_POS);
-                motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_UP_POS);
-                motorMineralFlip1_.setPower(0.2);
-                motorMineralFlip2_.setPower(0.2);
+
+                if (motorMineralFlip1_.getCurrentPosition() < MINERAL_FLIP_UP_POS + 100) {         //enough to make sure arm doesn't get stuck in a swing
+                    motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_UP_POS);
+                    motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_UP_POS);
+                    motorMineralFlip1_.setPower(0.3);                                                //TODO: Create variable
+                    motorMineralFlip2_.setPower(0.3);
+                }
+                if (FlippyDisplay_ == true) {
+                    telemetry.addData("Flippy", ", Pos=" + String.valueOf(motorMineralFlip1_.getCurrentPosition()) + "  TgtPos = " + String.valueOf(motorMineralFlip1_.getTargetPosition()));
+                    telemetry.update();
+                }
 
                 servoDump_.setPosition(DUMP_COLLECTION);
+
+                if (USE_MOTOR_INTAKE  && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
+                    if(gamepad2.b){
+
+                        if (IntakeOnFlag != false) {
+                            yCnt_[1] = 2;          //automatically sets to off
+                            IntakeOnFlag = false;
+                        }
+
+                        motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
+                        motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_DUMP_POS);
+                        motorMineralFlip1_.setPower(0.2);                                            //TODO: Create variable
+                        motorMineralFlip2_.setPower(0.2);
+
+                        if (motorMineralFlip1_.getCurrentPosition() > (MINERAL_FLIP_DUMP_POS - 20)){ //TODO: Create variable for the twenty
+                            if(gamepad2.b){
+                                servoDump_.setPosition(DUMP_UP);
+                            } else{
+                                servoDump_.setPosition(DUMP_COLLECTION);
+                            }
+                            // telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
+                        }
+
+                         if (FlippyDisplay_ == true) {
+                             telemetry.addData("Flippy", ", Pos=" + String.valueOf(motorMineralFlip1_.getCurrentPosition()) + "  TgtPos = " + String.valueOf(motorMineralFlip1_.getTargetPosition()));
+                             telemetry.update();
+                         }
+
+                    }
+                }
+
             }
+        }
+
+        if (showCtlInfo_ == true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
         }
     }
 
-    void driveDumpMineralsPos(){                                                  //Aditi feb 9th
+ /*   void driveDumpMineralsPos(){                                                  //Aditi feb 9th
         if (USE_MOTOR_INTAKE  && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(bCnt_[1] >= 1){
-                aCnt_[1] = 0;
-                xCnt_[1] = 0;
-                lbCnt_[1] = 0;
+//                aCnt_[1] = 0;
+//                xCnt_[1] = 0;
+//                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 2;          //automatically sets to off
@@ -592,11 +696,20 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                     } else{
                          servoDump_.setPosition(DUMP_COLLECTION);
                     }
-                    telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
+                   // telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
                 }
             }
+        }                                                                      
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
         }
     }
+*/
 
 /*    void driveCompactPos(){
         //do we need this?
