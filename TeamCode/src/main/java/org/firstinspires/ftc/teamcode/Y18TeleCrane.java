@@ -15,6 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //@Disabled
 public class Y18TeleCrane extends Y18CommonCrane
 {
+   boolean crater_trip_ = true; 
+
    static boolean MUTUAL_EXCLUSIVE_A_X = true;        // keep A/X mutual exclusive
    static final boolean USE_PAD1_FOR_RELIC = false;   // use Pad1 to control relic claw for debuging
    boolean USE_PAD1_FOR_CIPHER = false;                   // allow one driver for cipher, for easy testing
@@ -73,6 +75,7 @@ public class Y18TeleCrane extends Y18CommonCrane
    double last_relic_lowering_time_ = 0.0;   // last time Pad2/Y is pressed for lowering relic
    static final boolean USE_LOW_SEN_DRIVE_FOR_RELIC = true;   // use low sensitivity drive mode for relic and balancing
    boolean low_sen_drive_ = false;
+   boolean end_game_ = false;
 
    /// Intake system control
    double intake_state_change_time_ = 0.0;     // the last time for the intake state change
@@ -159,6 +162,7 @@ public class Y18TeleCrane extends Y18CommonCrane
       if(USE_LOW_SEN_DRIVE_FOR_RELIC) {
          low_sen_drive_ = (rsb1_cnt_%2)==1; 
       }
+      end_game_ = ((rb1_cnt_%2)==1) ; 
 
       power_lift_ = 0.0;
 
@@ -166,8 +170,6 @@ public class Y18TeleCrane extends Y18CommonCrane
       double power_sweeper = 0;
       double lsy = 0, lsx = 0, rsy = 0, rsx = 0;
       double drive_power_f = 1.0; 
-      //if( lb1_cnt_%2 != 0 ) drive_power_f = 1.25;  // 25% boost for dflt, => full power
-      //if( lb1_cnt_%2 != 0 ) drive_power_f = 0.75;  // 25% slowdown for dflt, for shelfing and balancing 
 
       // rsy: right_stick_y ranges from -1 to 1, where -1 is full up, and 1 is full down
       // rsx: right_stick_x ranges from -1 to 1, where -1 is full left and 1 is full right
@@ -291,29 +293,6 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       }
 
-      
-      if( DEBUG_DRIVE_MOTORS ) {
-         boolean test_drive = false;
-         if( gamepad1.left_bumper ) {
-            power_lf = 1.0; 
-            test_drive = true;
-         } else if( gamepad1.right_bumper ) {
-            power_lf = -1.0; 
-            test_drive = true;
-         } else if( Math.abs(gamepad1.left_trigger)>0.1 ) {
-            power_lf = gamepad1.left_trigger; 
-            test_drive = true;
-         } else if( Math.abs(gamepad1.right_trigger)>0.1 ) {
-            power_lf = -gamepad1.right_trigger; 
-            test_drive = true;
-         }
-         if( test_drive ) {
-            power_lf = Range.clip(power_lf, -1, 1);
-            power_lb = power_lf; 
-            power_rf = power_rb = -power_lf*RIGHT_POWER_RATIO; 
-         }
-      }
-
       /// Control Mecanum wheels by left joystick
       //if( USE_MECANUM_WHEELS && Math.abs(rsx) < 0.2 ) 
          //lsy = -gamepad1.left_stick_y;   // throttle
@@ -349,6 +328,8 @@ public class Y18TeleCrane extends Y18CommonCrane
          power_rb = Range.clip(power_rb, -max_mw_power, max_mw_power); 
       }
 
+      boolean arm_raised = false;
+      boolean is_dumping = false;
       if( USE_CRANE ) {
          int crane_enc = motor_crane_.getCurrentPosition();
          boolean manual_crane_control = false;
@@ -376,16 +357,17 @@ public class Y18TeleCrane extends Y18CommonCrane
                   a1_cnt_ = b1_cnt_ = 0; 
                   a2_cnt_ = b2_cnt_ = 0; 
                   if( AUTO_SWEEPER ) {
-                     if( (lb1_cnt_==0 || lb2_cnt_==0) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
-                        lb1_cnt_ = 1;
-                        lb2_cnt_ = 1;
+                     if( (y1_cnt_==0 || y2_cnt_==0) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
+                        y1_cnt_ = 1;
+                        y2_cnt_ = 1;
                      } 
                   } else {
-                     lb1_cnt_ = 0;   // start with sweep in
-                     lb2_cnt_ = 0;   // start with sweep in
+                     y1_cnt_ = 0;   // start with sweep in
+                     y2_cnt_ = 0;   // start with sweep in
                   }
                   crane_arm_dump_start_t = 0.0; 
                } else if ( a1_cnt_%2 == 1 || a2_cnt_%2 == 1) {
+                  arm_raised = true;
                   if( crane_tg_enc == CRANE_DUMP_POS ) {
                      // keep it at DUMP
                   } else {
@@ -393,29 +375,32 @@ public class Y18TeleCrane extends Y18CommonCrane
                   }
                   b1_cnt_ = x1_cnt_ = 0; 
                   b2_cnt_ = x2_cnt_ = 0; 
-                  if( lb1_cnt_==1 || lb2_cnt_==1 ) {
-                     lb1_cnt_ = 2;    // stop sweeper, and ready for reverse
-		     lb2_cnt_ = 2;
+                  if( y1_cnt_==1 || y2_cnt_==1 ) {
+                     y1_cnt_ = 2;    // stop sweeper, and ready for reverse
+                     y2_cnt_ = 2;
                   }
                   if( gamepad1.b || gamepad2.b ) {
                      crane_tg_enc = CRANE_DUMP_POS; 
                   } else {
                      crane_tg_enc = CRANE_UP_POS; 
-		  }
+                  }
+                  if( USE_ONE_STAGE_LIFT ) {
+                     crane_tg_enc = CRANE_DUMP_POS; 
+                  }
+                  if( !crater_trip_ ) {
+                     crane_tg_enc = CRANE_DUMP_POS_DEPOT; 
+                  }
                }
             }
-            crane_tg_enc = (int)(Range.clip(crane_tg_enc,0,MAX_CRANE_ENC_COUNT));
-            motor_crane_.setTargetPosition( crane_tg_enc );
-
             double crane_pwr = CRANE_POS_POWER; 
             if( ADAPTIVE_CRANE_POWER ) {
-               if( crane_tg_enc==CRANE_UP_POS ) {
+               if( crane_tg_enc==CRANE_UP_POS || (USE_ONE_STAGE_LIFT && (crane_tg_enc==CRANE_DUMP_POS)) ) {
                   if( crane_enc<0.5*crane_tg_enc ) {
                      crane_pwr *= 2.0;   // double
                   } else if( crane_enc>0.8*crane_tg_enc ) {
                      crane_pwr /= 1.5;   // half, braking
                   } else {
-                     // dflt
+                     // dflt power
                   }
                } else if( crane_tg_enc==CRANE_COLLECT_POS ) {
                   if( crane_enc<0.6*crane_tg_enc ) {
@@ -439,10 +424,19 @@ public class Y18TeleCrane extends Y18CommonCrane
                } else if( crane_tg_enc==CRANE_DUMP_POS ) {
                   crane_pwr = 0.2;       // 0.4 is too fast
                }
+            } 
+
+            if( gamepad1.left_bumper || gamepad2.left_bumper ) { 
+               // manually lift the arm to pass the crater
+               crane_tg_enc = CRANE_COLLECT_POS + 200; 
+               crane_pwr = 0.3;
             }
 
+            crane_tg_enc = (int)(Range.clip(crane_tg_enc,0,MAX_CRANE_ENC_COUNT));
+            motor_crane_.setTargetPosition( crane_tg_enc ); 
             crane_pwr = Range.clip(crane_pwr,0.0,1.0); 
             motor_crane_.setPower( crane_pwr );
+
             if( USE_CRANE_DOUBLE ) {
                motor_crane2_.setTargetPosition( crane_tg_enc );
                motor_crane2_.setPower( crane_pwr );
@@ -468,14 +462,17 @@ public class Y18TeleCrane extends Y18CommonCrane
                      // manual dump 
                      servo_crane_arm_pos_ = CRANE_ARM_DUMP; 
                   } 
-                  lb1_cnt_=0;  // stop sweeper
-                  lb2_cnt_=0;  // stop sweeper
+                  y1_cnt_=0;  // stop sweeper
+                  y2_cnt_=0;  // stop sweeper
                } else { 
                   servo_crane_arm_pos_ = CRANE_ARM_COLLECT; 
                }
+               is_dumping = (servo_crane_arm_pos_ == CRANE_ARM_DUMP) ;
+               if( is_dumping && !crater_trip_ ) servo_crane_arm_pos_ = CRANE_ARM_DUMP_DEPOT ;
                servo_crane_arm_.setPosition(servo_crane_arm_pos_); 
             }
             if( USE_CRANE_WINCH ) { 
+/*
                if( gamepad1.left_trigger>0.5 && gamepad1.right_trigger>0.5 ) {
                   servo_crane_winch_pos_ = CRANE_WINCH_EXTEND ;
                } else if(gamepad1.left_trigger>0.5 ) {
@@ -484,6 +481,17 @@ public class Y18TeleCrane extends Y18CommonCrane
                   servo_crane_winch_pos_ -= 0.02;
                }
                servo_crane_winch_pos_ = Range.clip(servo_crane_winch_pos_,0,CRANE_WINCH_MAX_EXTEND);
+               servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
+*/
+               servo_crane_winch_pos_ = CR_SERVO_STOP; 
+               if( gamepad1.dpad_up ) {
+                  servo_crane_winch_pos_ = CRANE_WINCH_EXTEND; 
+               } else if( gamepad1.dpad_down ) {
+                  servo_crane_winch_pos_ = 1-CRANE_WINCH_EXTEND; 
+               } else if( crane_enc>CRANE_WINCH_HOLD_ENC ) {
+                  servo_crane_winch_pos_ = CRANE_WINCH_HOLD; 
+               }
+               servo_crane_winch_pos_ = Range.clip(servo_crane_winch_pos_,0.0,1.0);
                servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
             }
          }
@@ -552,7 +560,7 @@ public class Y18TeleCrane extends Y18CommonCrane
 */
       } 
 
-      if( USE_LIFT ) {
+      if( USE_LIFT && end_game_ ) {
          /// Use digital pad to control lift
          if( gamepad1.dpad_up || gamepad2.dpad_up ) { // raise lift
             power_lift_ = LIFT_UP_POWER;
@@ -567,15 +575,24 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       if( USE_SWEEPER ) {
          // use left bummper to control sweeper
-         if( lb1_cnt_%4==1 || lb2_cnt_%4==1 ) {
+         if( y1_cnt_%4==1 || y2_cnt_%4==1 ) {
             power_sweeper_ = SWEEP_IN_POWER; 
-         } else if( lb1_cnt_%4==3 || lb2_cnt_%4==3 ) {
+         } else if( y1_cnt_%4==3 || y2_cnt_%4==3 ) {
             power_sweeper_ = SWEEP_OUT_POWER; 
          } else {
             power_sweeper_ = 0 ; 
          }
+         if( power_sweeper_==0 && !crater_trip_ && USE_SWEEPER_FOR_DUMPING && is_dumping ) {
+            power_sweeper_ = SWEEP_OUT_POWER/3 ;   // slowly sweep out to help dumping
+         }
          power_sweeper_ = Range.clip(power_sweeper_,-1,1);
          motor_sweeper_.setPower(power_sweeper_); 
+      }
+
+      if( USE_STAB_WHEELS ) {
+         if( arm_raised || gamepad1.right_trigger>0.5 ) {
+            servo_stab_wheel_.setPosition( STAB_WHEEL_RELEASE ); 
+         }
       }
 
 
@@ -612,7 +629,7 @@ public class Y18TeleCrane extends Y18CommonCrane
 
 
       // Send telemetry data back to driver station for debugging
-      boolean show_msg = true;
+      boolean show_msg = false;
       boolean show_loop_cnt = false;
       boolean show_wheel_power = false;
       boolean show_lift_pos = true;
