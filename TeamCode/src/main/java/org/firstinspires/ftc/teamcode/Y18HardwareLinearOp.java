@@ -122,7 +122,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_REV_RANGE = true;            
     Rev2mDistanceSensor revRange_;                         // REV 2m range sensor
 
-    static final boolean USE_MAG_SWITCH = true;            
+    static final boolean USE_MAG_SWITCH = false;
     DigitalChannel magSwitch_;                        // REV magnetic switch
 
     static final boolean USE_MAG_EXTENTION_SWITCH = true;                   //added by Aditi feb 10th
