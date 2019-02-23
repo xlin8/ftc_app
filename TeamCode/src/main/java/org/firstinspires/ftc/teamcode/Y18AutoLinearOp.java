@@ -84,10 +84,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double MAX_WALL_DISTANCE = 17.5;           // max distance to wall; distance higher than this will trigger re-alignment
     static final double MAX_DISTANCE_RANGE = 199.9;         // any distance larger than this value will be consider as invalid reading, for REV 2M range sensor
     static final double CRATER_SEE_WALL_DISTANCE = 50.0;    // wall distance to stop for team marker delivery
-    static final double DEPOT_SEE_WALL_DISTANCE = 110.0;
+    static final double DEPOT_SEE_WALL_DISTANCE = 120.0;
 
-    static final double AUTO_LIFT_FLIPPING_ARM_TIME = 25;   // 25 seconds into autonomous, lift the flipping arm
-    static final double TIME_TO_LIFT_FLIPPING_ARM = 5.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER = 25.5; // 25 seconds into autonomous, lift the flipping arm
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT = 24;
+    static final double TIME_TO_LIFT_FLIPPING_ARM = 6.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
     double motorFlippyPower_ = 0.3;
     int FLIP_LIFT_POS = 300;
 
@@ -237,7 +238,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             TIME_TO_ENTER_DEPOT, DRIVE_WAIT_TILL,     // delay entering depot to avoid clash
             0.1, DRIVE_RESET_ENC_DONE,
             0.5, DRIVE_FORWARD_ENC_TO_WALL,
-            0.5, DRIVE_DROP_MARKER,
+            1.0, DRIVE_DROP_MARKER,
             0.1, DRIVE_RESET_ENC_DONE, 
             0.2, DRIVE_SHIFT_RIGHT,
             2.0, DRIVE_SHIFT_GEAR,
@@ -366,9 +367,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.7, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            60, DRIVE_TURN_RIGHT_ENC,
+            70, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.75, DRIVE_FORWARD_ENC,
+            0.7, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.0, DRIVE_DROP_MARKER,
             0.2, DRIVE_BACKWARD_ENC,
@@ -404,9 +405,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_RIGHT,
             0.1, DRIVE_RESET_ENC_DONE,
-            1.4, DRIVE_FORWARD_ENC,
+            1.35, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.3, DRIVE_FORWARD_ENC_TO_WALL,
+            0.2, DRIVE_FORWARD_ENC_TO_WALL,
             0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
@@ -1127,8 +1128,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     }
 
     void raisingTheFlippingArm (){
-        if (currTime_ >= AUTO_LIFT_FLIPPING_ARM_TIME) {
-            if (currTime_ <= (AUTO_LIFT_FLIPPING_ARM_TIME + TIME_TO_LIFT_FLIPPING_ARM)) {
+        double chk_start_time=(isCraterTripFlag_ == true) ? AUTO_LIFT_FLIPPING_ARM_TIME_CRATER : AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT;
+
+        if (currTime_ >= chk_start_time) {
+            if (currTime_ <= (chk_start_time + TIME_TO_LIFT_FLIPPING_ARM)) {
                 motorMineralFlip1_.setTargetPosition(FLIP_LIFT_POS);
                 motorMineralFlip2_.setTargetPosition(FLIP_LIFT_POS);
                 motorMineralFlip1_.setPower(motorFlippyPower_);
@@ -1141,10 +1144,6 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
                 servoExtention_.setPosition(CR_SERVO_STOP);
             }
-
-            // if (isCraterTripFlag_ == false){
-            //    servoLittleStabWheels_.setPosition(STAB_WHEELS_OUT_POSITION);
-            // }
         }
 
         // telemetry.addData("Raising arm ", "Time="+String.valueOf(currTime_) + "Flip power = " + String.format("%.2f/%.2f", motorMineralFlip1_.getPower(), motorMineralFlip2_.getPower()));
