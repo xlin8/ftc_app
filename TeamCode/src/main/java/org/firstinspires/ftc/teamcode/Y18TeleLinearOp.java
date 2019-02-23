@@ -59,6 +59,8 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
     static boolean IntakeOnFlag = false;            //manages the intake on automatic sequences - added by Aditi Feb 10th 2019
 
+    static boolean showCtlInfo_ = true;                   // to show telemetry for a, x, b and lb cnts for flippy position
+
     @Override
     public void runOpMode() {
         initialize();
@@ -430,8 +432,8 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             } else {
                 motorIntake_.setPower(INTAKE_POWER_BRAKE);
             }
-            telemetry.addData("Intake Power", ": " + (yCnt_[1]) + ", Power=" + String.valueOf(motorIntake_.getPower()));
-            telemetry.update();
+          //  telemetry.addData("Intake Power", ": " + (yCnt_[1]) + ", Power=" + String.valueOf(motorIntake_.getPower()));
+           // telemetry.update();
         }
     }
 
@@ -488,7 +490,7 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
             //         - the contraption must be at position a(up) or b(dump)
             //         - a constant of 0.6 is provided for holding power
             servoExtention_.setPosition(Extention_Power);
-            telemetry.addData("Extention Power", ", Power=" + String.valueOf(servoExtention_.getPosition()));
+            //telemetry.addData("Extention Power", ", Power=" + String.valueOf(servoExtention_.getPosition()));
 
         }
     }
@@ -526,6 +528,14 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                 servoDump_.setPosition(DUMP_COLLECTION);
             }
         }
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
+        }
     }
 
     void driveHoverMineralsPos(){                                                  // Aditi feb 16th
@@ -548,6 +558,14 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                 servoDump_.setPosition(DUMP_COLLECTION);
             }
         }
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
+        }
     }
 
     void driveUpMineralsPos(){                                                  // Aditi feb 9th
@@ -568,6 +586,15 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
 
                 servoDump_.setPosition(DUMP_COLLECTION);
             }
+        }
+
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
         }
     }
 
@@ -594,11 +621,20 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
                     } else{
                          servoDump_.setPosition(DUMP_COLLECTION);
                     }
-                    telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
+                   // telemetry.addData("Dumper", ", Power=" + String.valueOf(servoDump_.getPosition()));
                 }
             }
         }
+        if (showCtlInfo_==true) {
+            telemetry.addData("aCnt_[1]", " = " + String.valueOf(aCnt_[1]));
+            telemetry.addData("bCnt_[1]", " = " + String.valueOf(bCnt_[1]));
+            telemetry.addData("xCnt_[1]", " = " + String.valueOf(xCnt_[1]));
+            telemetry.addData("lbCnt_[1]", " = " + String.valueOf(lbCnt_[1]));
+
+            telemetry.update();
+        }
     }
+
 
 /*    void driveCompactPos(){
         //do we need this?
