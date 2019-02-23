@@ -584,6 +584,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         }
 
         if (USE_MINERAL_FLIP){
+            motorMineralFlip1_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorMineralFlip2_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
             motorMineralFlip1_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motorMineralFlip2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
