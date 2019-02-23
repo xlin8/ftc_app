@@ -44,6 +44,8 @@ public class Y18CommonCrane extends OpMode {
    DcMotor motorRF_; //port 2
    DcMotor motorRB_; //port 3
 
+   static final double  CR_SERVO_STOP = 0.5;
+
    /// Crane motors
    static boolean RUN_CRANE_ENC_POS = true;                 // use RUN_TO_POSITION if true
    static boolean ADAPTIVE_CRANE_POWER = true;              // adaptive to adjust the power
@@ -60,12 +62,16 @@ public class Y18CommonCrane extends OpMode {
    //static final int    CRANE_DUMP_POS = 1150;              // min lift encoder count to prevent reverse
    //static final int    CRANE_UP_POS = 1600;                // min lift encoder count to prevent reverse, almost vertical
    //static final int    CRANE_DUMP_POS = 1800;              // min lift encoder count to prevent reverse
-   static final int    CRANE_UP_POS = 850;                // min lift encoder count to prevent reverse, almost vertical, NR60
-   static final int    CRANE_DUMP_POS = 1050;              // min lift encoder count to prevent reverse
+   static final int    CRANE_UP_POS = 850;                // 
+   static final int    CRANE_DUMP_POS = 1050;             // 
    DcMotor motor_crane_; 
    double power_crane_ = 0;
    static boolean USE_CRANE_DOUBLE = true;                // use two motor to drive crane to ensure enough torque; YJ188
    DcMotor motor_crane2_; 
+   static final boolean USE_ONE_STAGE_LIFT = false;       // lift main arm directly to dump position if true for max efficiency 
+
+   static final int    CRANE_DUMP_POS_DEPOT = 850;        // dump position for depot side
+   static final boolean USE_SWEEPER_FOR_DUMPING = false;   // sweep out to help dumping on depot side
 
    /// Sweeper motors
    static final boolean AUTO_SWEEPER = true;              // automatically start the sweeper when the arm is lowered
@@ -81,9 +87,10 @@ public class Y18CommonCrane extends OpMode {
    Servo servo_crane_arm_;
    double servo_crane_arm_pos_ =0.0; 
    static double CRANE_ARM_COLLECT = 0.14;
-   static double CRANE_ARM_DUMP = 0.46;     // crane arm with sorter
+   static double CRANE_ARM_DUMP = 0.46;        // dump position for crater side
+   static double CRANE_ARM_DUMP_DEPOT = 1.00;  // dump position for depot side
    static double CRANE_ARM_INIT = CRANE_ARM_DUMP;
-   static boolean TIMED_CRANE_ARM_DUMP = true;   // hold the main arm till the slide is ready
+   static boolean TIMED_CRANE_ARM_DUMP = false;   // hold the main arm till the slide is ready
    static double CRANE_ARM_DUMP_HOLD = CRANE_ARM_COLLECT ;
    static double CRANE_ARM_DUMP_TIME = 0.5;      // seconds to dump
    static double CRANE_ARM_DUMP_ENC_RATIO = 0.90;      // ratio to start dump
@@ -92,9 +99,13 @@ public class Y18CommonCrane extends OpMode {
    static boolean USE_CRANE_WINCH = true;
    Servo servo_crane_winch_;
    double servo_crane_winch_pos_ =0.0; 
-   static double CRANE_WINCH_INIT = 0.0;
-   static double CRANE_WINCH_EXTEND = 0.50;         // winch 1.5dia, 4.72in/120cm per rotation; 20/4.72=4.23 rotation, 4.23/8=0.53
-   static double CRANE_WINCH_MAX_EXTEND = 0.53;     // winch 1.5dia, 4.72in/120cm per rotation; 20/4.72=4.23 rotation, 4.23/8=0.53
+   //static double CRANE_WINCH_INIT = 0.0;
+   //static double CRANE_WINCH_EXTEND = 0.50;         // winch 1.5dia, 4.72in/120cm per rotation; 20/4.72=4.23 rotation, 4.23/8=0.53
+   //static double CRANE_WINCH_MAX_EXTEND = 0.53;     // winch 1.5dia, 4.72in/120cm per rotation; 20/4.72=4.23 rotation, 4.23/8=0.53
+   static double CRANE_WINCH_INIT = CR_SERVO_STOP;    // switch to REV smart servo, 2019/02/10
+   static double CRANE_WINCH_EXTEND = 1.0;            
+   static double CRANE_WINCH_HOLD_ENC = 600;            
+   static double CRANE_WINCH_HOLD = 0.6;            
 
 
    /// LIFT
@@ -117,9 +128,12 @@ public class Y18CommonCrane extends OpMode {
    static final double  LIFT_PIN_STOP = 0.0;              // INIT position, switch to 180-servo, 2018/11/30
    static final double  LIFT_PIN_PULL = 0.75; 
 
+   static final boolean USE_STAB_WHEELS = true; 
+   Servo  servo_stab_wheel_;                                // Servo for hold/release the back stabilization wheels
+   static final double  STAB_WHEEL_INIT = 0.5;              // INIT position, hold the wheels
+   static final double  STAB_WHEEL_RELEASE = 0.4;           // release the wheels
 
    //CR SERVO STOP
-   static final double  CR_SERVO_STOP = 0.5;
 
 
    /////***************************** SENSORS *************************************/////
@@ -226,8 +240,10 @@ public class Y18CommonCrane extends OpMode {
          servo_lift_pin_pos_ = LIFT_PIN_STOP ; 
       } 
 
-
-
+      if( USE_STAB_WHEELS ) {
+         servo_stab_wheel_ = hardwareMap.servo.get("servoLittleStabWheels_");
+         servo_stab_wheel_.setPosition( STAB_WHEEL_INIT );
+      } 
 
 
       /// Use the hardwareMap to get the dc motors and servos by name.

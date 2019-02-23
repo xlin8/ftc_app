@@ -69,7 +69,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_SERVO_DUMP = true;
     static final double DUMP_UP = 0.46;
     static final double DUMP_COLLECTION = 0.14;
-    static final double DUMP_INIT_POSITION = 0.19;
+    static final double DUMP_INIT_POSITION = 0.46;
 
     // Team marker servo
     Servo servoMarker_;
@@ -82,8 +82,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     DcMotor motorMineralFlip1_;
     DcMotor motorMineralFlip2_;
     static final boolean USE_MINERAL_FLIP = true;
-    int MINERAL_FLIP_DUMP_POS = 1100;               //was 1000, 1150
-    int MINERAL_FLIP_UP_POS = 900;                //was 800, 1000
+    int MINERAL_FLIP_DUMP_POS = 1050;               //was 1000, 1150
+    int MINERAL_FLIP_UP_POS = 850;                //was 800, 1000
     int MINERAL_FLIP_COLLECT_POS = 0;
     int MINERAL_FLIP_HOVER_POS = 200;
 
@@ -105,7 +105,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     //little stabilizer wheels
     Servo servoLittleStabWheels_;
     static final boolean USE_LIL_STAB_WHEELS = true;
-    static final double STAB_WHEELS_INIT_POSITION = 1.0;
+    static final double STAB_WHEELS_INIT_POSITION = 0.5;
     static final double STAB_WHEELS_OUT_POSITION = 0.7;
 
     // IMU
