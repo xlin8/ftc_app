@@ -106,7 +106,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     Servo servoLittleStabWheels_;
     static final boolean USE_LIL_STAB_WHEELS = true;
     static final double STAB_WHEELS_INIT_POSITION = 0.5;
-    static final double STAB_WHEELS_OUT_POSITION = 0.7;
+    static final double STAB_WHEELS_OUT_POSITION = 0.4;                     //was 0.7
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
