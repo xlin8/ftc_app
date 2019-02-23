@@ -181,18 +181,38 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
         if (game_pad.x) {
             xCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+           if(gamepad2.x){
+            aCnt_[1] = 0;
+            bCnt_[1] = 0;
+            lbCnt_[1] = 0;
+           }
         } else if (game_pad.y) {
             yCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
         } else if (game_pad.a) {
             aCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+            if(gamepad2.a){
+                xCnt_[1] = 0;
+                bCnt_[1] = 0;
+                lbCnt_[1] = 0;
+            }
         } else if (game_pad.b) {
             bCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+            if(gamepad2.b){
+                aCnt_[1] = 0;
+                xCnt_[1] = 0;
+                lbCnt_[1] = 0;
+            }
         } else if (game_pad.left_bumper) {
             lbCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
+            if(gamepad2.left_bumper){
+                aCnt_[1] = 0;
+                bCnt_[1] = 0;
+                xCnt_[1] = 0;
+            }
         } else if (game_pad.right_bumper) {
             rbCnt_[pad_id]++;
             lastButtonPressTime_[pad_id] = currTime_;
@@ -509,9 +529,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     void driveCollectMineralsPos(){                                         //Aditi feb 9th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(xCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                aCnt_[1] = 0;
-                lbCnt_[1] = 0;
+//                bCnt_[1] = 0;
+//                aCnt_[1] = 0;
+//                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != true) {
                     yCnt_[1] = 1;          //automatically sets to intake
@@ -539,9 +559,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     void driveHoverMineralsPos(){                                                  // Aditi feb 16th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(lbCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                xCnt_[1] = 0;
-                aCnt_[1] = 0;
+//                bCnt_[1] = 0;
+//                xCnt_[1] = 0;
+//                aCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 2;          //automatically sets to off
@@ -569,9 +589,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     void driveUpMineralsPos(){                                                  // Aditi feb 9th
         if (USE_MOTOR_INTAKE && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(aCnt_[1] % 2 == 1){
-                bCnt_[1] = 0;
-                xCnt_[1] = 0;
-                lbCnt_[1] = 0;
+//                bCnt_[1] = 0;
+//                xCnt_[1] = 0;
+//                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 0;          //automatically sets to off
@@ -599,9 +619,9 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp
     void driveDumpMineralsPos(){                                                  //Aditi feb 9th
         if (USE_MOTOR_INTAKE  && USE_MINERAL_FLIP && USE_SERVO_DUMP) {
             if(bCnt_[1] >= 1){
-                aCnt_[1] = 0;
-                xCnt_[1] = 0;
-                lbCnt_[1] = 0;
+//                aCnt_[1] = 0;
+//                xCnt_[1] = 0;
+//                lbCnt_[1] = 0;
 
                 if (IntakeOnFlag != false) {
                     yCnt_[1] = 2;          //automatically sets to off
