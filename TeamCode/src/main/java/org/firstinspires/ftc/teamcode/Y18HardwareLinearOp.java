@@ -70,6 +70,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double DUMP_UP = 0.44;
     static final double DUMP_COLLECTION = 0.12;
     static final double DUMP_INIT_POSITION = 0.44;
+    int DIFF_FLIPPY_POS_TO_DUMP = 20;
 
     // Team marker servo
     Servo servoMarker_;
@@ -86,6 +87,13 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     int MINERAL_FLIP_UP_POS = 850;                //was 800, 1000
     int MINERAL_FLIP_COLLECT_POS = 0;
     int MINERAL_FLIP_HOVER_POS = 200;
+    int MINERAL_FLIP_RESET_POS = -200;
+    double MINERAL_FLIP_POWER_BIG = 0.3;
+    double MINERAL_FLIP_POWER_SMALL = 0.2;
+   // double MINERAL_FLIP_POWER_DOWN = -0.2;
+    double MINERAL_FLIP_POWER_OFF = 0;
+    double FlippyResetStartTime = 0;
+    double timeForFlippyReset = 1.0;
 
     // Intake motor
     DcMotor motorIntake_;
