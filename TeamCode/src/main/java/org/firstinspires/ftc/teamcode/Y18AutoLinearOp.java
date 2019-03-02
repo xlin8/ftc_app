@@ -86,11 +86,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double CRATER_SEE_WALL_DISTANCE = 50.0;    // wall distance to stop for team marker delivery
     static final double DEPOT_SEE_WALL_DISTANCE = 120.0;
 
-    static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER = 25; // 25 seconds into autonomous, lift the flipping arm
-    static final double AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT = 25;
-    static final double TIME_TO_LIFT_FLIPPING_ARM = 5.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER = 24.5; // 25 seconds into autonomous, lift the flipping arm
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT = 24.5;
+    static final double TIME_TO_LIFT_FLIPPING_ARM = 6.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
     double motorFlippyPower_ = 0.3;
-    int FLIP_LIFT_POS = 300;
+    int FLIP_LIFT_POS = 400;
 
     // Mineral detector
     VuforiaLocalizer vuforia_;
@@ -282,18 +282,18 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.35, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            125, DRIVE_TURN_LEFT_ENC,
+            117, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.65, DRIVE_SHIFT_GEAR,
-            1.37, DRIVE_FORWARD_ENC,
+            1.39, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             40, DRIVE_TURN_LEFT_ENC,
             //0.1, DRIVE_RESET_ENC_DONE,
             //1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
-            0.5, DRIVE_SHIFT_RIGHT,
+            0.7, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.8, DRIVE_FORWARD_ENC,
+            0.5, DRIVE_SHIFT_RIGHT,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -536,6 +536,12 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         initialize();
 
         // Wait for the game to begin
+        if (isCraterTripFlag_ == true) {
+            telemetry.addData("Start automonous", "Crater Trip");
+        } else {
+            telemetry.addData("Start automonous", "Depot Trip");
+        }
+
         if (DETECT_GOLD_MINERAL_BEFORE_START == true) {
             detectGoldMinearalAndWaitForStart();
 
@@ -749,7 +755,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         motorLB_.setPower(power_lb);
         motorRB_.setPower(power_rb);
 
-        boolean show_msg_flag = true;
+        boolean show_msg_flag = false;
         boolean debug_drive_motor_flag = false;
         boolean show_state = true;
         boolean show_heading = true;
@@ -1142,7 +1148,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 motorMineralFlip1_.setPower(motorFlippyPower_);
                 motorMineralFlip2_.setPower(motorFlippyPower_);
 
-                servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+                if (currTime_ >= (chk_start_time + 0.5)) {
+                    servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
+                }
             } else {
                 motorMineralFlip1_.setPower(0.0);
                 motorMineralFlip2_.setPower(0.0);
