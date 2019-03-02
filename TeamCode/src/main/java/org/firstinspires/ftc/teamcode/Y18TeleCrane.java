@@ -357,7 +357,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                   a1_cnt_ = b1_cnt_ = 0; 
                   a2_cnt_ = b2_cnt_ = 0; 
                   if( AUTO_SWEEPER ) {
-                     if( (y1_cnt_==0 || y2_cnt_==0) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
+                     if( (y1_cnt_==0 || y1_cnt_==2 || y2_cnt_==0 || y2_cnt_==0) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
                         y1_cnt_ = 1;
                         y2_cnt_ = 1;
                      } 
@@ -483,14 +483,18 @@ public class Y18TeleCrane extends Y18CommonCrane
                servo_crane_winch_pos_ = Range.clip(servo_crane_winch_pos_,0,CRANE_WINCH_MAX_EXTEND);
                servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
 */
-               servo_crane_winch_pos_ = CR_SERVO_STOP; 
-               if( gamepad1.dpad_up ) {
-                  servo_crane_winch_pos_ = CRANE_WINCH_EXTEND; 
-               } else if( gamepad1.dpad_down ) {
-                  servo_crane_winch_pos_ = 1-CRANE_WINCH_EXTEND; 
-               } else if( crane_enc>CRANE_WINCH_HOLD_ENC ) {
-                  servo_crane_winch_pos_ = CRANE_WINCH_HOLD; 
+               servo_crane_winch_pos_ = CR_SERVO_STOP;
+               if( !end_game_ ) {
+                  if (gamepad1.dpad_up || gamepad2.dpad_up) {
+                     servo_crane_winch_pos_ = CRANE_WINCH_EXTEND;
+                  } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+                     servo_crane_winch_pos_ = 1 - CRANE_WINCH_EXTEND;
+                  } else if ( arm_raised || crane_enc > CRANE_WINCH_HOLD_ENC) {
+                     servo_crane_winch_pos_ = CRANE_WINCH_HOLD;
+
+                  }
                }
+
                servo_crane_winch_pos_ = Range.clip(servo_crane_winch_pos_,0.0,1.0);
                servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
             }

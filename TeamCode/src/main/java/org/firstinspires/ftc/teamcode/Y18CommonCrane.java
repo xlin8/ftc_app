@@ -70,7 +70,7 @@ public class Y18CommonCrane extends OpMode {
    DcMotor motor_crane2_; 
    static final boolean USE_ONE_STAGE_LIFT = false;       // lift main arm directly to dump position if true for max efficiency 
 
-   static final int    CRANE_DUMP_POS_DEPOT = 850;        // dump position for depot side
+   static final int    CRANE_DUMP_POS_DEPOT = 700;        // dump position for depot side
    static final boolean USE_SWEEPER_FOR_DUMPING = false;   // sweep out to help dumping on depot side
 
    /// Sweeper motors
@@ -86,9 +86,9 @@ public class Y18CommonCrane extends OpMode {
    static boolean USE_CRANE_ARM = true;
    Servo servo_crane_arm_;
    double servo_crane_arm_pos_ =0.0; 
-   static double CRANE_ARM_COLLECT = 0.14;
-   static double CRANE_ARM_DUMP = 0.46;        // dump position for crater side
-   static double CRANE_ARM_DUMP_DEPOT = 1.00;  // dump position for depot side
+   static double CRANE_ARM_COLLECT = 0.12;
+   static double CRANE_ARM_DUMP = 0.44;        // dump position for crater side
+   static double CRANE_ARM_DUMP_DEPOT = 0.62;  // dump position for depot side
    static double CRANE_ARM_INIT = CRANE_ARM_DUMP;
    static boolean TIMED_CRANE_ARM_DUMP = false;   // hold the main arm till the slide is ready
    static double CRANE_ARM_DUMP_HOLD = CRANE_ARM_COLLECT ;
@@ -104,8 +104,8 @@ public class Y18CommonCrane extends OpMode {
    //static double CRANE_WINCH_MAX_EXTEND = 0.53;     // winch 1.5dia, 4.72in/120cm per rotation; 20/4.72=4.23 rotation, 4.23/8=0.53
    static double CRANE_WINCH_INIT = CR_SERVO_STOP;    // switch to REV smart servo, 2019/02/10
    static double CRANE_WINCH_EXTEND = 1.0;            
-   static double CRANE_WINCH_HOLD_ENC = 600;            
-   static double CRANE_WINCH_HOLD = 0.6;            
+   static double CRANE_WINCH_HOLD_ENC = 200;
+   static double CRANE_WINCH_HOLD = 0.65;
 
 
    /// LIFT
@@ -214,7 +214,7 @@ public class Y18CommonCrane extends OpMode {
       }
       if( USE_CRANE_WINCH ) {
          //servo_crane_winch_ = hardwareMap.servo.get("servo_crane_winch");
-         servo_crane_winch_ = hardwareMap.servo.get("servoExtension");
+         servo_crane_winch_ = hardwareMap.servo.get("servoExtention");
          if( servo_crane_winch_!=null ) {
             servo_crane_winch_.setPosition(CRANE_WINCH_INIT); 
             servo_crane_winch_pos_ = CRANE_WINCH_INIT; 
