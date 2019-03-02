@@ -280,8 +280,10 @@ public class Y18TeleCrane extends Y18CommonCrane
          power_lf = (double) scaleDrivePower(power_lf,drive_power_f);
 
          if( USE_LOW_SEN_DRIVE_FOR_RELIC && low_sen_drive_ ) {
-            power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,/*drive_power_f*/1.0);
-            power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,/*drive_power_f*/1.0);
+            //power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,/*drive_power_f*/1.0);
+            //power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,/*drive_power_f*/1.0);
+            power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,/*drive_power_f*/1.4);
+            power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,/*drive_power_f*/1.4);
          }
 
          power_rf = Range.clip(power_rf, -1, 1);
@@ -484,10 +486,10 @@ public class Y18TeleCrane extends Y18CommonCrane
                servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
 */
                servo_crane_winch_pos_ = CR_SERVO_STOP;
-               if( !end_game_ ) {
-                  if (gamepad1.dpad_up || gamepad2.dpad_up) {
+               if( true ) {
+                  if ( (!end_game_&&gamepad1.dpad_up) || gamepad2.dpad_up) {
                      servo_crane_winch_pos_ = CRANE_WINCH_EXTEND;
-                  } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+                  } else if ( (!end_game_ && gamepad1.dpad_down) || gamepad2.dpad_down) {
                      servo_crane_winch_pos_ = 1 - CRANE_WINCH_EXTEND;
                   } else if ( arm_raised || crane_enc > CRANE_WINCH_HOLD_ENC) {
                      servo_crane_winch_pos_ = CRANE_WINCH_HOLD;
@@ -566,9 +568,9 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       if( USE_LIFT && end_game_ ) {
          /// Use digital pad to control lift
-         if( gamepad1.dpad_up || gamepad2.dpad_up ) { // raise lift
+         if( gamepad1.dpad_up /*|| gamepad2.dpad_up*/ ) { // raise lift
             power_lift_ = LIFT_UP_POWER;
-         } else if( gamepad1.dpad_down || gamepad2.dpad_down) {  // lower lift
+         } else if( gamepad1.dpad_down /*|| gamepad2.dpad_down*/) {  // lower lift
             power_lift_ = LIFT_DOWN_POWER;
          }
          motorLift_.setPower(power_lift_);

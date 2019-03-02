@@ -104,8 +104,8 @@ public class Y18CommonCrane extends OpMode {
    //static double CRANE_WINCH_MAX_EXTEND = 0.53;     // winch 1.5dia, 4.72in/120cm per rotation; 20/4.72=4.23 rotation, 4.23/8=0.53
    static double CRANE_WINCH_INIT = CR_SERVO_STOP;    // switch to REV smart servo, 2019/02/10
    static double CRANE_WINCH_EXTEND = 1.0;            
-   static double CRANE_WINCH_HOLD_ENC = 200;
-   static double CRANE_WINCH_HOLD = 0.65;
+   static double CRANE_WINCH_HOLD_ENC = 400;
+   static double CRANE_WINCH_HOLD = 0.60;
 
 
    /// LIFT
