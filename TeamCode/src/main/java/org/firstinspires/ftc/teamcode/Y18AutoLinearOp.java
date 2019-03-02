@@ -435,9 +435,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.55, DRIVE_FORWARD_ENC,
+            0.47, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            20, DRIVE_TURN_LEFT_ENC,
+            28, DRIVE_TURN_LEFT_ENC,
             // 0.1, DRIVE_RESET_ENC_DONE,
             // 1.0, DRIVE_SHIFT_RIGHT,
             1.8, DRIVE_SHIFT_GEAR,
@@ -536,19 +536,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         initialize();
 
         // Wait for the game to begin
-        if (isCraterTripFlag_ == true) {
-            telemetry.addData("Start automonous", "Crater Trip");
-        } else {
-            telemetry.addData("Start automonous", "Depot Trip");
-        }
-
         if (DETECT_GOLD_MINERAL_BEFORE_START == true) {
             detectGoldMinearalAndWaitForStart();
 
-            telemetry.addData("Start automonous", "(GoldAt="+String.valueOf(goldPosition_)+" IsGuessed="+String.valueOf(isGuessedGoldPosition_)+")");
+            telemetry.addData("Start automonous", "(is_crater_trip=" + String.valueOf(isCraterTripFlag_) + "GoldAt="+String.valueOf(goldPosition_)+" IsGuessed="+String.valueOf(isGuessedGoldPosition_)+")");
             telemetry.update();
         } else {
-            telemetry.addData(">", "Press Play to start autonomous " + "(Gold_at=" + String.valueOf(goldPosition_) + " is_guessed=" + String.valueOf(isGuessedGoldPosition_) + ")");
+            telemetry.addData(">", "Press Play to start autonomous " + "(is_crater_trip=" + String.valueOf(isCraterTripFlag_) + "Gold_at=" + String.valueOf(goldPosition_) + " is_guessed=" + String.valueOf(isGuessedGoldPosition_) + ")");
             telemetry.update();
 
             waitForStart();
