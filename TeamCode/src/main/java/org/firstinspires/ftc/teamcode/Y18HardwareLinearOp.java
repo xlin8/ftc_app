@@ -67,9 +67,9 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // Dumping servo
     Servo servoDump_;
     static final boolean USE_SERVO_DUMP = true;
-    static final double DUMP_UP = 0.46;
-    static final double DUMP_COLLECTION = 0.14;
-    static final double DUMP_INIT_POSITION = 0.46;
+    static final double DUMP_UP = 0.44;
+    static final double DUMP_COLLECTION = 0.12;
+    static final double DUMP_INIT_POSITION = 0.44;
 
     // Team marker servo
     Servo servoMarker_;
