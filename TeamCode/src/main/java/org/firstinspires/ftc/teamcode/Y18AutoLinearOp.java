@@ -86,9 +86,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double CRATER_SEE_WALL_DISTANCE = 50.0;    // wall distance to stop for team marker delivery
     static final double DEPOT_SEE_WALL_DISTANCE = 120.0;
 
-    static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER = 25.5; // 25 seconds into autonomous, lift the flipping arm
-    static final double AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT = 24;
-    static final double TIME_TO_LIFT_FLIPPING_ARM = 6.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER = 25; // 25 seconds into autonomous, lift the flipping arm
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT = 25;
+    static final double TIME_TO_LIFT_FLIPPING_ARM = 5.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
     double motorFlippyPower_ = 0.3;
     int FLIP_LIFT_POS = 300;
 

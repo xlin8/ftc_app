@@ -67,9 +67,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // Dumping servo
     Servo servoDump_;
     static final boolean USE_SERVO_DUMP = true;
-    static final double DUMP_UP = 0.46;
-    static final double DUMP_COLLECTION = 0.14;
-    static final double DUMP_INIT_POSITION = 0.46;
+    static final double DUMP_UP = 0.44;
+    static final double DUMP_COLLECTION = 0.12;
+    static final double DUMP_INIT_POSITION = 0.44;
+    int DIFF_FLIPPY_POS_TO_DUMP = 20;
 
     // Team marker servo
     Servo servoMarker_;
@@ -86,6 +87,13 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     int MINERAL_FLIP_UP_POS = 850;                //was 800, 1000
     int MINERAL_FLIP_COLLECT_POS = 0;
     int MINERAL_FLIP_HOVER_POS = 200;
+    int MINERAL_FLIP_RESET_POS = -200;
+    double MINERAL_FLIP_POWER_BIG = 0.3;
+    double MINERAL_FLIP_POWER_SMALL = 0.2;
+   // double MINERAL_FLIP_POWER_DOWN = -0.2;
+    double MINERAL_FLIP_POWER_OFF = 0;
+    double FlippyResetStartTime = 0;
+    double timeForFlippyReset = 1.0;
 
     // Intake motor
     DcMotor motorIntake_;
@@ -106,7 +114,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     Servo servoLittleStabWheels_;
     static final boolean USE_LIL_STAB_WHEELS = true;
     static final double STAB_WHEELS_INIT_POSITION = 0.5;
-    static final double STAB_WHEELS_OUT_POSITION = 0.7;
+    static final double STAB_WHEELS_OUT_POSITION = 0.4;                     //was 0.7
 
     // IMU
     BNO055IMU imu_;                                        // Adafruit or RevHub IMU
@@ -122,7 +130,7 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final boolean USE_REV_RANGE = true;            
     Rev2mDistanceSensor revRange_;                         // REV 2m range sensor
 
-    static final boolean USE_MAG_SWITCH = true;            
+    static final boolean USE_MAG_SWITCH = false;
     DigitalChannel magSwitch_;                        // REV magnetic switch
 
     static final boolean USE_MAG_EXTENTION_SWITCH = true;                   //added by Aditi feb 10th
