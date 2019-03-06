@@ -51,6 +51,7 @@ public class Y18CommonCrane extends OpMode {
    static boolean ADAPTIVE_CRANE_POWER = true;              // adaptive to adjust the power
    //static final double CRANE_POS_POWER = 0.3;
    static final double CRANE_POS_POWER = 0.4;               // YJ188 motor direct drive
+
    static boolean USE_CRANE = true;
    static final double CRANE_DOWN_POWER = -1.0;
    static final double CRANE_UP_POWER = 1.0;
@@ -63,8 +64,9 @@ public class Y18CommonCrane extends OpMode {
    //static final int    CRANE_UP_POS = 1600;                // min lift encoder count to prevent reverse, almost vertical
    //static final int    CRANE_DUMP_POS = 1800;              // min lift encoder count to prevent reverse
    static final int    CRANE_UP_POS = 850;                // 
-   static final int    CRANE_DUMP_POS = 1050;             // 
-   DcMotor motor_crane_; 
+   static final int    CRANE_DUMP_POS = 1050;             //
+
+   DcMotor motor_crane_;
    double power_crane_ = 0;
    static boolean USE_CRANE_DOUBLE = true;                // use two motor to drive crane to ensure enough torque; YJ188
    DcMotor motor_crane2_; 
@@ -73,7 +75,11 @@ public class Y18CommonCrane extends OpMode {
    static final int    CRANE_DUMP_POS_DEPOT = 700;        // dump position for depot side
    static final boolean USE_SWEEPER_FOR_DUMPING = false;   // sweep out to help dumping on depot side
 
-   /// Sweeper motors
+    static final int    CRANE_RESET_POS = -300;            // manually reset arm
+    static final double CRANE_RESET_POWER = 0.3;
+    static final double CRANE_RESET_TIME = 1.0;            // reset
+
+    /// Sweeper motors
    static final boolean AUTO_SWEEPER = true;              // automatically start the sweeper when the arm is lowered
    static final int MIN_CRANE_ENC_START_SWEEPER = 100;    // 
 
@@ -89,7 +95,7 @@ public class Y18CommonCrane extends OpMode {
    static double CRANE_ARM_COLLECT = 0.12;
    static double CRANE_ARM_DUMP = 0.44;        // dump position for crater side
    static double CRANE_ARM_DUMP_DEPOT = 0.62;  // dump position for depot side
-   static double CRANE_ARM_INIT = CRANE_ARM_DUMP;
+   static double CRANE_ARM_INIT = 0.34;
    static boolean TIMED_CRANE_ARM_DUMP = false;   // hold the main arm till the slide is ready
    static double CRANE_ARM_DUMP_HOLD = CRANE_ARM_COLLECT ;
    static double CRANE_ARM_DUMP_TIME = 0.5;      // seconds to dump

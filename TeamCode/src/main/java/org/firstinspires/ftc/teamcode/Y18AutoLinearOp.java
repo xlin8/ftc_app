@@ -225,11 +225,11 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             1.3, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             40, DRIVE_TURN_LEFT_ENC,
-            //0.1, DRIVE_RESET_ENC_DONE,
-            //1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             1.5, DRIVE_SHIFT_GEAR,
             0.1, DRIVE_RESET_ENC_DONE,
             0.60, DRIVE_FORWARD_ENC,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.5, DRIVE_SHIFT_RIGHT,  // align to the wall
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };

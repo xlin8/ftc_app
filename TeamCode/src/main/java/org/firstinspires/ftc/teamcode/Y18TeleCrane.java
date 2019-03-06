@@ -15,72 +15,41 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //@Disabled
 public class Y18TeleCrane extends Y18CommonCrane
 {
-   boolean crater_trip_ = true; 
+   /// Trip control variables
+   boolean crater_trip_ = true;
+   boolean fast_low_sen_drive_ = false;               // fast low sensitivity drive, 1.4X speed
 
+   static boolean ALLOW_FLIP_ROBOT = false;           // no need for Rover Ruckus
    static boolean MUTUAL_EXCLUSIVE_A_X = true;        // keep A/X mutual exclusive
-   static final boolean USE_PAD1_FOR_RELIC = false;   // use Pad1 to control relic claw for debuging
-   boolean USE_PAD1_FOR_CIPHER = false;                   // allow one driver for cipher, for easy testing
-   boolean USE_KNOCK_ARM_AS_FLAG = false;                  // use jewel knock arm as flag
-
-   boolean USE_AUTO_CLAMP = false;
-   int auto_clamp_mode_ = 0; // 0 = off, 1 = push glyphs onto ramp, 2= clamp and keep pushing, 3= release pusher, 4 = tilt ramp up
-
-   boolean USE_QUICK_RESET = false;
-   boolean auto_reset_lift = false;
-   //static final double  QUICK_RESET_TIME = 1.0;            // allow 3 sec for grabber to reset, incl. lift, claw, and pusher
-   //static final double  QUICK_RESET_TIME = 0.5;            // lock the intake for upto 0.5sec after right-trigger is released
-   static final double  QUICK_RESET_TIME = 0.1;         // cut it min, per Bastien's request, 2018/04/13
-
 
    /// Other variables
    static final double  MIN_BUTTON_INTERVAL = 0.3;
-
-   //static final double  MAX_LIFT_ENC_COUNT = 21500;   // 1.2m
-   //static final double  MAX_LIFT_ENC_COUNT = 21500*0.5/1.2;   // 0.5m=>20in for 3 glyphs
-   //static final double  MAX_LIFT_ENC_COUNT = 21500*0.6/1.2;   // 0.5m=>20in for 3 glyphs
-
-   /// ALL LIFT VARIABLES MOVED TO COMMON
-
    boolean DEBUG_DRIVE_MOTORS = false;
 
-
    boolean USE_MECANUM_WHEELS = true;
-   //boolean USE_MECANUM_FOR_SIDEWALK_ONLY = false;
    boolean USE_MECANUM_FOR_SIDEWALK_ONLY = true;
-   //static final double MECANUM_RIGHT_BACK_SCALE = 1.3;    // compensate the unbalanced robot at right back wheel
    static final double MECANUM_RIGHT_BACK_SCALE = 1.0;    // compensate the unbalanced robot at right back wheel
 
    boolean USE_ENCODER_FOR_TELEOP = true;
-   double ENCODER_MAX_DRIVE_POWER = 1.0;   // 2017/12/01
+   double ENCODER_MAX_DRIVE_POWER = 1.0;   
    double ENCODER_MAX_ROTATE_POWER = 0.3;
    double ENCODER_MAX_SIDEWALK_POWER = 0.5;   // 2018/02/09, cap Mecanum wheel sidewalk power at 0.5
 
    double RIGHT_POWER_RATIO = 1.00;
 
 
-   double last_stacking_time_ = 0.0;  // last time B is pressed for stacking
-   double last_reset_time_ = 0.0;     // last time right trigger is pressed for reseting grabber
-   double last_push_time_ = 0.0;      // last start time for pushing
-   int curr_push_start_enc_ = 0;      // starting lift encoder position for current push
-
-   double last_b1_b2_time_ = 0.0;  // last time B1/B2 is pressed for stacking
-
-   static final double RELIC_DRIVE_FACTOR = 0.7;   // slow down drive when trying to get relic
-   boolean relic_mode_ = false;
-   static final boolean AUTO_RETRACT_RELIC_ARM = false;   // auto retract arm after exiting relic mode
-   double last_relic_start_time_ = 0.0;      // last time left stick button is pressed for activating relic mode
-   double last_relic_end_time_ = 0.0;        // last time left stick button is pressed again to exit relic mode
-   int  relic_end_enc_ = 0;                  // encoder when relic exit
-   double last_relic_releasing_time_ = 0.0;  // last time LB2 is pressed for releasing relic
-   double last_relic_lowering_time_ = 0.0;   // last time Pad2/Y is pressed for lowering relic
-   static final boolean USE_LOW_SEN_DRIVE_FOR_RELIC = true;   // use low sensitivity drive mode for relic and balancing
+   static final boolean USE_LOW_SEN_DRIVE_FOR_DUMP = true;   // use low sensitivity drive mode for relic and balancing
    boolean low_sen_drive_ = false;
    boolean end_game_ = false;
 
-   /// Intake system control
-   double intake_state_change_time_ = 0.0;     // the last time for the intake state change
-   static final double INTAKE_CR_SERVO_TURN_TIME = 2.0;
+   /// Manually lower arm and reset the encoder
+   double arm_reset_start_time_ = 0.0;
 
+   static final boolean AUTO_LIFT_CONTROL = true;  // automatically lower and rise the hangling lift
+   static int AUTO_LIFT_ENC = 3000 ;
+
+   int last_crane_tg_enc_ = 0;
+   double last_crane_power_ = 0.0;
 
    ///  Constructor
    public Y18TeleCrane() {
@@ -90,8 +59,6 @@ public class Y18TeleCrane extends Y18CommonCrane
    ///  Code to run when the op mode is initialized goes here
    @Override public void init() {
       super.init();
-
-      auto_clamp_mode_ = 0;
 
       /// TODO: add tele-op specific hardware here
       if( USE_ENCODER_FOR_TELEOP ) {
@@ -115,10 +82,6 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       servo_lift_pin_pos_ = LIFT_PIN_PULL ;
 
-      last_stacking_time_ = 0.0; 
-      last_reset_time_ = 0.0; 
-      last_push_time_ = 0.0; 
-      last_b1_b2_time_ = 0.0; 
 
    }
 
@@ -159,7 +122,7 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       //servo_lift_pin_pos_ = LIFT_PIN_STOP;
 
-      if(USE_LOW_SEN_DRIVE_FOR_RELIC) {
+      if(USE_LOW_SEN_DRIVE_FOR_DUMP) {
          low_sen_drive_ = (rsb1_cnt_%2)==1; 
       }
       end_game_ = ((rb1_cnt_%2)==1) ; 
@@ -220,7 +183,6 @@ public class Y18TeleCrane extends Y18CommonCrane
             last_button_time2_ = curr_time_;
          } else if (gamepad2.b) {
             b2_cnt_++;
-            if(last_b1_b2_time_==0.0 || last_b1_b2_time_<last_button_time2_) last_b1_b2_time_ = curr_time_; 
             last_button_time2_ = curr_time_;
          } else if (gamepad2.left_bumper) {
             lb2_cnt_++;
@@ -279,11 +241,14 @@ public class Y18TeleCrane extends Y18CommonCrane
          power_rf = (double) scaleDrivePower(power_rf,drive_power_f);
          power_lf = (double) scaleDrivePower(power_lf,drive_power_f);
 
-         if( USE_LOW_SEN_DRIVE_FOR_RELIC && low_sen_drive_ ) {
-            //power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,/*drive_power_f*/1.0);
-            //power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,/*drive_power_f*/1.0);
-            power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,/*drive_power_f*/1.4);
-            power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,/*drive_power_f*/1.4);
+         if( USE_LOW_SEN_DRIVE_FOR_DUMP && low_sen_drive_ ) {
+            if( fast_low_sen_drive_ ) {
+               power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,1.4);
+               power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,1.4);
+            } else {
+               power_rf = (double) scaleDrivePowerLowSensitivity(power_rf,1.0);
+               power_lf = (double) scaleDrivePowerLowSensitivity(power_lf,1.0);
+            }
          }
 
          power_rf = Range.clip(power_rf, -1, 1);
@@ -295,10 +260,6 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       }
 
-      /// Control Mecanum wheels by left joystick
-      //if( USE_MECANUM_WHEELS && Math.abs(rsx) < 0.2 ) 
-         //lsy = -gamepad1.left_stick_y;   // throttle
-         //lsx = gamepad1.left_stick_x;    // direction; lsx>0, turn right <=> RF<LF, left wheels turn faster
       /// Use Mecanum wheels by right joystick
       boolean drive_sidewalk = false;
       if( USE_MECANUM_WHEELS && Math.abs(rsx) > JOYSTICK_DEAD_ZONE ) {
@@ -335,8 +296,29 @@ public class Y18TeleCrane extends Y18CommonCrane
       if( USE_CRANE ) {
          int crane_enc = motor_crane_.getCurrentPosition();
          boolean manual_crane_control = false;
+         boolean reset_arm = false;
 
-         if( RUN_CRANE_ENC_POS ) {
+         if( rb2_cnt_ > 0 ) {
+            reset_arm = true;
+            if( arm_reset_start_time_==0.0 ) {
+               arm_reset_start_time_ = curr_time_;
+               motor_crane_.setTargetPosition(CRANE_RESET_POS);
+               motor_crane_.setPower(CRANE_RESET_POWER);
+               motor_crane2_.setTargetPosition(CRANE_RESET_POS);
+               motor_crane2_.setPower(CRANE_RESET_POWER);
+            }
+
+            if( curr_time_ - arm_reset_start_time_ > CRANE_RESET_TIME ) {
+               motor_crane_.setPower(0.0);
+               motor_crane_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+               motor_crane_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+               motor_crane2_.setPower(0.0);
+               motor_crane2_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+               motor_crane2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+               rb2_cnt_ = 0;
+               arm_reset_start_time_ = 0;
+            }
+         } else if( RUN_CRANE_ENC_POS ) {
             int crane_tg_enc =  motor_crane_.getTargetPosition();
             if( !motor_crane_.isBusy() ) {
 /* Manual control FIXME
@@ -353,6 +335,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                } 
 */
             }
+
             if( !manual_crane_control && (a1_cnt_%2==1 || x1_cnt_%2==1 || a2_cnt_%2==1 || x2_cnt_==1) ) {
                if( x1_cnt_%2 == 1 || x2_cnt_%2 == 1 ) {
                   crane_tg_enc = CRANE_COLLECT_POS; 
@@ -435,13 +418,26 @@ public class Y18TeleCrane extends Y18CommonCrane
             }
 
             crane_tg_enc = (int)(Range.clip(crane_tg_enc,0,MAX_CRANE_ENC_COUNT));
-            motor_crane_.setTargetPosition( crane_tg_enc ); 
-            crane_pwr = Range.clip(crane_pwr,0.0,1.0); 
-            motor_crane_.setPower( crane_pwr );
+            if( last_crane_tg_enc_ != crane_tg_enc ) {
+               motor_crane_.setTargetPosition(crane_tg_enc);
+               if(USE_CRANE_DOUBLE) motor_crane2_.setTargetPosition(crane_tg_enc);
+               last_crane_tg_enc_ = crane_tg_enc;
+            }
+
+            crane_pwr = Range.clip(crane_pwr,0.0,1.0);
+            if( crane_pwr != last_crane_power_ ) {
+               motor_crane_.setPower(crane_pwr);
+               if(USE_CRANE_DOUBLE) motor_crane2_.setPower(crane_pwr);
+               last_crane_power_ = crane_pwr;
+            }
 
             if( USE_CRANE_DOUBLE ) {
-               motor_crane2_.setTargetPosition( crane_tg_enc );
-               motor_crane2_.setPower( crane_pwr );
+               if( last_crane_tg_enc_ != crane_tg_enc ) {
+
+               }
+               if( last_crane_power_ != crane_pwr ) {
+
+               }
             }
 
             if( USE_CRANE_ARM ) {
@@ -474,22 +470,11 @@ public class Y18TeleCrane extends Y18CommonCrane
                servo_crane_arm_.setPosition(servo_crane_arm_pos_); 
             }
             if( USE_CRANE_WINCH ) { 
-/*
-               if( gamepad1.left_trigger>0.5 && gamepad1.right_trigger>0.5 ) {
-                  servo_crane_winch_pos_ = CRANE_WINCH_EXTEND ;
-               } else if(gamepad1.left_trigger>0.5 ) {
-                  servo_crane_winch_pos_ += 0.02;
-               } else if( gamepad1.right_trigger>0.5 ) {
-                  servo_crane_winch_pos_ -= 0.02;
-               }
-               servo_crane_winch_pos_ = Range.clip(servo_crane_winch_pos_,0,CRANE_WINCH_MAX_EXTEND);
-               servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
-*/
                servo_crane_winch_pos_ = CR_SERVO_STOP;
                if( true ) {
-                  if ( (!end_game_&&gamepad1.dpad_up) || gamepad2.dpad_up) {
+                  if ( (!end_game_ && !fast_low_sen_drive_ && gamepad1.dpad_up) || gamepad2.dpad_up) {
                      servo_crane_winch_pos_ = CRANE_WINCH_EXTEND;
-                  } else if ( (!end_game_ && gamepad1.dpad_down) || gamepad2.dpad_down) {
+                  } else if ( (!end_game_ && !fast_low_sen_drive_&& gamepad1.dpad_down) || gamepad2.dpad_down) {
                      servo_crane_winch_pos_ = 1 - CRANE_WINCH_EXTEND;
                   } else if ( arm_raised || crane_enc > CRANE_WINCH_HOLD_ENC) {
                      servo_crane_winch_pos_ = CRANE_WINCH_HOLD;
@@ -501,78 +486,30 @@ public class Y18TeleCrane extends Y18CommonCrane
                servo_crane_winch_.setPosition(servo_crane_winch_pos_); 
             }
          }
-/*
-         else {
-            // manually control motor by monitoring encoder value
-
-
-            rsy = -gamepad1.right_stick_y ; 
-
-            if( Math.abs(rsy)>0.1 ) {
-               if( rsy>0 ) {
-                  power_crane_ = Math.abs(rsy)*CRANE_UP_POWER ; 
-               } else {
-                  power_crane_ = Math.abs(rsy)*CRANE_DOWN_POWER ; 
-               }
-               manual_crane_control = true; 
-            } else if( gamepad1.dpad_up ) { // raise, auto-close claw
-               power_crane_ = CRANE_UP_POWER;
-               manual_crane_control = true; 
-            } else if( gamepad1.dpad_down ) {  // lower
-               power_crane_ = CRANE_DOWN_POWER;
-               manual_crane_control = true;
-            } 
-            if(manual_crane_control) {
-               a1_cnt_=0;
-               b1_cnt_=0;
-               x1_cnt_=0;
-            }
-
-            if( !manual_crane_control && (b1_cnt_%2==1 || a1_cnt_%2==1 || x1_cnt_%2==1) ) {
-               double tg_enc = crane_enc; 
-               if( x1_cnt_%2 == 1 ) {
-                  tg_enc = 0; 
-               } else if( b1_cnt_%2 == 1 ) {
-                  tg_enc = MAX_CRANE_ENC_COUNT ; 
-               } else if ( a1_cnt_%2 == 1 ) {
-                  tg_enc = MAX_CRANE_ENC_COUNT / 2 ; 
-               }
-               if( tg_enc>0 ) {
-                  if( crane_enc>tg_enc ) {
-                     power_crane_=0.0;   // STOP
-                     //} else if( crane_enc>tg_enc-CRANE_DIP_ENC_COUNT) {
-                     //   power_crane_=MIN_CRANE_HOLD_POWER;  // HOLD
-               } else {
-                  power_crane_=CRANE_UP_POWER;    // RAISE
-               }
-               } else {
-                  if( crane_enc>0 ) {
-                     power_crane_ = CRANE_DOWN_POWER;   // LOWER
-                  }
-               }
-            }
-
-
-            // Avoid over-extend/over-retract the crane
-            if( crane_enc>=MAX_CRANE_ENC_COUNT && power_crane_>0 ) {
-               power_crane_ = 0.0; 
-            } else if( crane_enc<=0 && power_crane_<0 ) {
-               power_crane_ = 0.0; 
-            }
-
-            power_crane_ = Range.clip(power_crane_,-1,1);
-            motor_crane_.setPower(power_crane_); 
-         }
-*/
       } 
 
-      if( USE_LIFT && end_game_ ) {
+      if( USE_LIFT && (end_game_||fast_low_sen_drive_) ) {
+
          /// Use digital pad to control lift
          if( gamepad1.dpad_up /*|| gamepad2.dpad_up*/ ) { // raise lift
             power_lift_ = LIFT_UP_POWER;
          } else if( gamepad1.dpad_down /*|| gamepad2.dpad_down*/) {  // lower lift
             power_lift_ = LIFT_DOWN_POWER;
          }
+
+         if( power_lift_==0.0 && AUTO_LIFT_CONTROL ) {
+            int lift_enc = Math.abs(motorLift_.getCurrentPosition());
+            if( curr_time_<5.0 ) {
+               if (lift_enc < AUTO_LIFT_ENC) {
+                  power_lift_ = LIFT_UP_POWER;
+               }
+            } else if( curr_time_>100.0 && curr_time_<105.0 ) {
+               if (lift_enc > 100 ) {
+                  power_lift_ = LIFT_DOWN_POWER;
+               }
+            }
+         }
+
          motorLift_.setPower(power_lift_);
 
         if( gamepad1.right_bumper ) servo_lift_pin_pos_ = LIFT_PIN_PULL;
@@ -602,6 +539,7 @@ public class Y18TeleCrane extends Y18CommonCrane
       }
 
 
+      if( ALLOW_FLIP_ROBOT ) {
       /// Flip robot by gamepad1 left jobstick button 
       boolean flip_robot = false;  
       if( lsb1_cnt_%2 == 1 ) flip_robot = true;     
@@ -618,6 +556,7 @@ public class Y18TeleCrane extends Y18CommonCrane
             power_lb *= -1; 
             power_rb *= -1; 
          }
+      }
       }
 
       /// Set power values for all motors after clipping
@@ -673,7 +612,7 @@ public class Y18TeleCrane extends Y18CommonCrane
             telemetry.addData("Battery", String.format("#sensors: %d, voltage: %.2fV", numVoltageSensors(), getBatteryVoltage(true)));
          }
          if( USE_LIFT && USE_ENCODER_FOR_TELEOP && show_lift_pos ) {
-            telemetry.addData("Lift EncPose", ": "+String.valueOf(motorLift_.getCurrentPosition())+", Power="+String.valueOf(motorLift_.getPower())+", curr_drop_pos="+String.valueOf(curr_push_start_enc_)); 
+            telemetry.addData("Lift EncPose", ": "+String.valueOf(motorLift_.getCurrentPosition())+", Power="+String.valueOf(motorLift_.getPower())); 
          } 
       } 
 
@@ -719,7 +658,7 @@ public class Y18TeleCrane extends Y18CommonCrane
       return scaleDrivePower(dVal, 1.0); 
    } 
 
-   /// Low sensitivity drive mode for balancing and relic
+   /// Low sensitivity drive mode 
    double scaleDrivePowerLowSensitivity(double dVal, double factor) {
       //                    { 0.0, 0.06, 0.13, 0.19, 0.25, 0.31, 0.38, 0.44, 0.50, 0.56, 0.63, 0.69, 0.75, 0.81, 0.88, 0.94, 1.00 };  // linear scale
       //double[] scaleArray = {0.0, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.27, 0.30, 0.34, 0.38, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00};  // Y17, with encoder
