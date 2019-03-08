@@ -79,6 +79,13 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     static final double MARKER_DROP_POS = 0.0;
     static final double MARKER_BACK_COMPACT_POS = 0.0;
 
+    // Main arm holding servo
+    Servo servoArmHolder_;
+    static final boolean USE_SERVO_ARM_HOLDER = true;
+    static final double SERVO_ARM_HOLD_POS = 0.5;
+    static final double SERVO_ARM_RELEASE_POS = 0.82;
+    //static final double SERVO_ARM_INIT_POS = 0.0;
+
     // Front linear slide
     DcMotor motorMineralFlip1_;
     DcMotor motorMineralFlip2_;
@@ -206,6 +213,10 @@ public class Y18HardwareLinearOp extends LinearOpMode {
         if (USE_SERVO_MARKER) {
             servoMarker_ = hardwareMap.servo.get("servoMarker");
             servoMarker_.setPosition(MARKER_UP_POS);
+        }
+
+        if (USE_SERVO_ARM_HOLDER) {
+            servoArmHolder_ = hardwareMap.servo.get("servoArmHolder");
         }
 
         if (USE_LIL_STAB_WHEELS){

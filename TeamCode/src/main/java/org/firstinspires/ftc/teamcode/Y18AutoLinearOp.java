@@ -61,7 +61,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double  AUTO_RUN_TIME = 60.0;              // 60 sec for testing/debugging
     static final double  AUTO_RESET_ENC_TIME = 1.00;        // period for reseting encoders when entering DRIVE_RESET_ENC_DONE
     static final double  AUTO_ENC_STUCK_TIME_OUT = 2.00;     // 2sec for ~60deg
-    static final double  TIME_TO_ENTER_DEPOT = 23.00;
+    static final double  TIME_TO_ENTER_DEPOT = 22.00;
     static final boolean USE_ENC_FOR_DRIVE = true;          // use encoder for accurate movement
 
     /// Power for drive and turn, need be tuned for each robot
@@ -91,6 +91,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     static final double TIME_TO_LIFT_FLIPPING_ARM = 6.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
     double motorFlippyPower_ = 0.3;
     int FLIP_LIFT_POS = 400;
+    static final boolean LIFT_ARM_AFTER_DROP_MARKER = true;  // start lifting arm after dropping team marker 
 
     // Mineral detector
     VuforiaLocalizer vuforia_;
@@ -282,18 +283,20 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.35, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            117, DRIVE_TURN_LEFT_ENC,
+            120, DRIVE_TURN_LEFT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             1.65, DRIVE_SHIFT_GEAR,
-            1.39, DRIVE_FORWARD_ENC,
+            1.30, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             40, DRIVE_TURN_LEFT_ENC,
             //0.1, DRIVE_RESET_ENC_DONE,
             //1.0, DRIVE_SHIFT_RIGHT,  // align to the wall
             0.1, DRIVE_RESET_ENC_DONE,
-            0.7, DRIVE_FORWARD_ENC,
+            0.5, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.5, DRIVE_SHIFT_RIGHT,
+            0.1, DRIVE_RESET_ENC_DONE,
+            0.4, DRIVE_FORWARD_ENC,
             (double) (NUM_TRIPS), DRIVE_CHANGE_TRIP,  // changes to single sample trip or double sample
             60.0, DRIVE_STOP
     };
@@ -592,6 +595,10 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             motorMineralFlip1_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motorMineralFlip2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
+
+	if( USE_SERVO_ARM_HOLDER ) {
+            servoArmHolder_.setPosition(SERVO_ARM_HOLD_POS); 
+	} 
 
         numDistOk_ = 0;
         numDistFar_ = 0;
@@ -1110,7 +1117,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
         } else if( curr_mode == DRIVE_BACKWARD_ENC_CRATER && magSwitch_!=null ) {
            double lf_enc = motorLF_.getCurrentPosition();
            double dist_travelled = Math.abs( lf_enc / tg_enc_cnt ) ;
-           if( magSwitch_.getState() && dist_travelled>0.5 ) {  // switch triggered by crater, STOP the robot
+           if( magSwitch_.getState() && dist_travelled>0.1 ) {  // switch triggered by crater, STOP the robot
               // magnetic swtich active low; so FALSE by dflt, TRUE if it touches the crater
               return gotoNextState(states, time, true);
            }
@@ -1135,8 +1142,21 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     void raisingTheFlippingArm (){
         double chk_start_time=(isCraterTripFlag_ == true) ? AUTO_LIFT_FLIPPING_ARM_TIME_CRATER : AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT;
 
+	    if( currTime_ >= chk_start_time-0.5 ) {
+	       if( USE_SERVO_ARM_HOLDER ) {
+	           servoArmHolder_.setPosition(SERVO_ARM_RELEASE_POS);
+	       }
+	    }
+
         if (currTime_ >= chk_start_time) {
-            if (currTime_ <= (chk_start_time + TIME_TO_LIFT_FLIPPING_ARM)) {
+	        boolean lift_arm = true;
+	        if( LIFT_ARM_AFTER_DROP_MARKER ) {
+	            if( currTime_<chk_start_time+2 && Math.abs(servoMarker_.getPosition()-MARKER_UP_POS)<0.1 ) {
+			       // wait upto 2sec for dropping team mark before lift arm
+                    lift_arm = false;
+		        }
+		    }
+            if ( lift_arm && currTime_ <= (chk_start_time + TIME_TO_LIFT_FLIPPING_ARM)) {
                 motorMineralFlip1_.setTargetPosition(FLIP_LIFT_POS);
                 motorMineralFlip2_.setTargetPosition(FLIP_LIFT_POS);
                 motorMineralFlip1_.setPower(motorFlippyPower_);
