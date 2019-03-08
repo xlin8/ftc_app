@@ -6,13 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * TeleOp codes for depot side
  */
 
-@TeleOp(name="Y18TeleCraneFast", group="GG")
+@TeleOp(name="Y18TeleCraneSingle", group="GG")
 //@Disabled
-public class Y18TeleCraneFast extends Y18TeleCrane
+public class Y18TeleCraneSingle extends Y18TeleCrane
 {
 
    ///  Constructor
-   public Y18TeleCraneFast() {
+   public Y18TeleCraneSingle() {
    }
 
    ///Code to run when the op mode is initialized goes here
@@ -20,7 +20,8 @@ public class Y18TeleCraneFast extends Y18TeleCrane
       public void init() {
          super.init();
          crater_trip_ = true;
-         fast_low_sen_drive_ = true;
+         fast_low_sen_drive_ = false;
+         single_driver_ = true;
       }
 
    /// This method will be called once before entering loop()

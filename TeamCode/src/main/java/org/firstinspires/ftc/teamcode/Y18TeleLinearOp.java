@@ -120,6 +120,11 @@ public class Y18TeleLinearOp extends Y18HardwareLinearOp {
         if (USE_LIL_STAB_WHEELS) {
             servoLittleStabWheels_.setPosition(STAB_WHEELS_INIT_POSITION);
         }
+
+	if( USE_SERVO_ARM_HOLDER ) {
+            servoArmHolder_.setPosition(SERVO_ARM_RELEASE_POS); 
+	} 
+
     }
 
     void initializeWhenStart() {

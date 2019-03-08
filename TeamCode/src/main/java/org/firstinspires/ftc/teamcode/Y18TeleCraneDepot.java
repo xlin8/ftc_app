@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  */
 
 @TeleOp(name="Y18TeleCraneDepot", group="GG")
-//@Disabled
+@Disabled
 public class Y18TeleCraneDepot extends Y18TeleCrane
 {
 

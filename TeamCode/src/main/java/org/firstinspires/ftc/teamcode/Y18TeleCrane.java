@@ -18,6 +18,7 @@ public class Y18TeleCrane extends Y18CommonCrane
    /// Trip control variables
    boolean crater_trip_ = true;
    boolean fast_low_sen_drive_ = false;               // fast low sensitivity drive, 1.4X speed
+   boolean single_driver_ = false;
 
    static boolean ALLOW_FLIP_ROBOT = false;           // no need for Rover Ruckus
    static boolean MUTUAL_EXCLUSIVE_A_X = true;        // keep A/X mutual exclusive
@@ -46,7 +47,8 @@ public class Y18TeleCrane extends Y18CommonCrane
    double arm_reset_start_time_ = 0.0;
 
    static final boolean AUTO_LIFT_CONTROL = true;  // automatically lower and rise the hangling lift
-   static int AUTO_LIFT_ENC = 3000 ;
+   static int AUTO_LIFT_ENC = 5000 ;
+   static int AUTO_LIFT_UP_ENC = 1000 ;
 
    int last_crane_tg_enc_ = 0;
    double last_crane_power_ = 0.0;
@@ -125,7 +127,8 @@ public class Y18TeleCrane extends Y18CommonCrane
       if(USE_LOW_SEN_DRIVE_FOR_DUMP) {
          low_sen_drive_ = (rsb1_cnt_%2)==1; 
       }
-      end_game_ = ((rb1_cnt_%2)==1) ; 
+      end_game_ = true;
+      if(single_driver_) end_game_ = ((rb1_cnt_%2)==1) ;
 
       power_lift_ = 0.0;
 
@@ -336,13 +339,16 @@ public class Y18TeleCrane extends Y18CommonCrane
 */
             }
 
-            if( !manual_crane_control && (a1_cnt_%2==1 || x1_cnt_%2==1 || a2_cnt_%2==1 || x2_cnt_==1) ) {
-               if( x1_cnt_%2 == 1 || x2_cnt_%2 == 1 ) {
+            if( !manual_crane_control && ((single_driver_ && (a1_cnt_%2==1 || x1_cnt_%2==1)) || a2_cnt_%2==1 || x2_cnt_==1) ) {
+               if( (single_driver_ && x1_cnt_%2 == 1) || x2_cnt_%2 == 1 ) {
                   crane_tg_enc = CRANE_COLLECT_POS; 
                   a1_cnt_ = b1_cnt_ = 0; 
-                  a2_cnt_ = b2_cnt_ = 0; 
+                  a2_cnt_ = b2_cnt_ = 0;
                   if( AUTO_SWEEPER ) {
-                     if( (y1_cnt_==0 || y1_cnt_==2 || y2_cnt_==0 || y2_cnt_==0) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
+                     if( crane_enc > MIN_CRANE_ENC_START_SWEEPER+100 ) {
+                        y1_cnt_ = 0;
+                        y2_cnt_ = 0;
+                     } else if( ( (single_driver_ && (y1_cnt_==0 /*|| y1_cnt_==2*/)) || y2_cnt_==0 /*|| y2_cnt_==2*/) && crane_enc<MIN_CRANE_ENC_START_SWEEPER ) {
                         y1_cnt_ = 1;
                         y2_cnt_ = 1;
                      } 
@@ -351,7 +357,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                      y2_cnt_ = 0;   // start with sweep in
                   }
                   crane_arm_dump_start_t = 0.0; 
-               } else if ( a1_cnt_%2 == 1 || a2_cnt_%2 == 1) {
+               } else if ( (single_driver_ && a1_cnt_%2 == 1) || a2_cnt_%2 == 1) {
                   arm_raised = true;
                   if( crane_tg_enc == CRANE_DUMP_POS ) {
                      // keep it at DUMP
@@ -360,11 +366,11 @@ public class Y18TeleCrane extends Y18CommonCrane
                   }
                   b1_cnt_ = x1_cnt_ = 0; 
                   b2_cnt_ = x2_cnt_ = 0; 
-                  if( y1_cnt_==1 || y2_cnt_==1 ) {
+                  if( (single_driver_ && y1_cnt_==1) || y2_cnt_==1 ) {
                      y1_cnt_ = 2;    // stop sweeper, and ready for reverse
                      y2_cnt_ = 2;
                   }
-                  if( gamepad1.b || gamepad2.b ) {
+                  if( (single_driver_ && gamepad1.b) || gamepad2.b ) {
                      crane_tg_enc = CRANE_DUMP_POS; 
                   } else {
                      crane_tg_enc = CRANE_UP_POS; 
@@ -491,10 +497,12 @@ public class Y18TeleCrane extends Y18CommonCrane
       if( USE_LIFT && (end_game_||fast_low_sen_drive_) ) {
 
          /// Use digital pad to control lift
-         if( gamepad1.dpad_up /*|| gamepad2.dpad_up*/ ) { // raise lift
-            power_lift_ = LIFT_UP_POWER;
-         } else if( gamepad1.dpad_down /*|| gamepad2.dpad_down*/) {  // lower lift
-            power_lift_ = LIFT_DOWN_POWER;
+         if( end_game_ || fast_low_sen_drive_ ) {
+            if (gamepad1.dpad_up /*|| gamepad2.dpad_up*/) { // raise lift
+               power_lift_ = LIFT_UP_POWER;
+            } else if (gamepad1.dpad_down /*|| gamepad2.dpad_down*/) {  // lower lift
+               power_lift_ = LIFT_DOWN_POWER;
+            }
          }
 
          if( power_lift_==0.0 && AUTO_LIFT_CONTROL ) {
@@ -504,7 +512,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                   power_lift_ = LIFT_UP_POWER;
                }
             } else if( curr_time_>100.0 && curr_time_<105.0 ) {
-               if (lift_enc > 100 ) {
+               if (lift_enc > AUTO_LIFT_UP_ENC ) {
                   power_lift_ = LIFT_DOWN_POWER;
                }
             }
@@ -518,9 +526,9 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       if( USE_SWEEPER ) {
          // use left bummper to control sweeper
-         if( y1_cnt_%4==1 || y2_cnt_%4==1 ) {
+         if( (single_driver_ && y1_cnt_%4==1) || y2_cnt_%4==1 ) {
             power_sweeper_ = SWEEP_IN_POWER; 
-         } else if( y1_cnt_%4==3 || y2_cnt_%4==3 ) {
+         } else if( (single_driver_ && y1_cnt_%4==3) || y2_cnt_%4==3 ) {
             power_sweeper_ = SWEEP_OUT_POWER; 
          } else {
             power_sweeper_ = 0 ; 
