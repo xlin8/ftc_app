@@ -125,7 +125,11 @@ public class Y18TeleCrane extends Y18CommonCrane
       //servo_lift_pin_pos_ = LIFT_PIN_STOP;
 
       if(USE_LOW_SEN_DRIVE_FOR_DUMP) {
-         low_sen_drive_ = (rsb1_cnt_%2)==1; 
+         if( fast_low_sen_drive_ ) {
+            low_sen_drive_ = (rsb1_cnt_ % 2) == 1;
+         } else {
+            low_sen_drive_ = (rsb1_cnt_ % 2) == 0;
+         }
       }
       end_game_ = true;
       if(single_driver_) end_game_ = ((rb1_cnt_%2)==1) ;
