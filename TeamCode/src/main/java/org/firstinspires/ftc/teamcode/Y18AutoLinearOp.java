@@ -332,7 +332,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.05, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            10, DRIVE_TURN_RIGHT_ENC,
+            60, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.03, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
@@ -345,8 +345,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.07, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            15, DRIVE_TURN_LEFT_ENC,
-            0.1, DRIVE_RESET_ENC_DONE,
+            //15, DRIVE_TURN_LEFT_ENC,
+            //0.1, DRIVE_RESET_ENC_DONE,
             60.0, DRIVE_STOP
     };
 
@@ -354,14 +354,14 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.17, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            40, DRIVE_TURN_RIGHT_ENC,
+            55, DRIVE_TURN_RIGHT_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
             0.7, DRIVE_FORWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            0.05, DRIVE_BACKWARD_ENC,
+            0.15, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            12, DRIVE_TURN_LEFT_ENC,
-            0.1, DRIVE_FORWARD_ENC,
+            49, DRIVE_TURN_LEFT_ENC,
+            0.07, DRIVE_FORWARD_ENC,
             60.0, DRIVE_STOP
     };
 
