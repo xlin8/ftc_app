@@ -88,6 +88,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
     static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER = 24.5; // 25 seconds into autonomous, lift the flipping arm
     static final double AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT = 24.5;
+    static final double AUTO_LIFT_FLIPPING_ARM_TIME_CRATER_SHORT = 17.0;
     static final double TIME_TO_LIFT_FLIPPING_ARM = 6.0;    //At 25 seconds into autonomous, lift the flipping arm for 1.0 seconds
     double motorFlippyPower_ = 0.3;
     int FLIP_LIFT_POS = 400;
@@ -360,7 +361,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             0.1, DRIVE_RESET_ENC_DONE,
             0.15, DRIVE_BACKWARD_ENC,
             0.1, DRIVE_RESET_ENC_DONE,
-            49, DRIVE_TURN_LEFT_ENC,
+            50, DRIVE_TURN_LEFT_ENC,
             0.07, DRIVE_FORWARD_ENC,
             60.0, DRIVE_STOP
     };
@@ -596,9 +597,9 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
             motorMineralFlip2_.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
 
-	if( USE_SERVO_ARM_HOLDER ) {
+	    if( USE_SERVO_ARM_HOLDER ) {
             servoArmHolder_.setPosition(SERVO_ARM_HOLD_POS); 
-	} 
+	    }
 
         numDistOk_ = 0;
         numDistFar_ = 0;
@@ -1140,7 +1141,18 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
     }
 
     void raisingTheFlippingArm (){
-        double chk_start_time=(isCraterTripFlag_ == true) ? AUTO_LIFT_FLIPPING_ARM_TIME_CRATER : AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT;
+        double chk_start_time;
+
+        if (isCraterTripFlag_ == true) {
+            if (isShortTripFlag_ == true) {
+                chk_start_time = AUTO_LIFT_FLIPPING_ARM_TIME_CRATER_SHORT;
+            } else {
+                chk_start_time = AUTO_LIFT_FLIPPING_ARM_TIME_CRATER;
+            }
+
+        } else {
+            chk_start_time = AUTO_LIFT_FLIPPING_ARM_TIME_DEPOT;
+        }
 
 	    if( currTime_ >= chk_start_time-0.5 ) {
 	       if( USE_SERVO_ARM_HOLDER ) {
@@ -1150,11 +1162,13 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
         if (currTime_ >= chk_start_time) {
 	        boolean lift_arm = true;
-	        if( LIFT_ARM_AFTER_DROP_MARKER ) {
-	            if( currTime_<chk_start_time+2 && Math.abs(servoMarker_.getPosition()-MARKER_UP_POS)<0.1 ) {
-			       // wait upto 2sec for dropping team mark before lift arm
-                    lift_arm = false;
-		        }
+	        if (isShortTripFlag_ == false) {
+                if( LIFT_ARM_AFTER_DROP_MARKER ) {
+                    if( currTime_<chk_start_time+2 && Math.abs(servoMarker_.getPosition()-MARKER_UP_POS)<0.1 ) {
+                       // wait upto 2sec for dropping team mark before lift arm
+                        lift_arm = false;
+                    }
+                }
 		    }
             if ( lift_arm && currTime_ <= (chk_start_time + TIME_TO_LIFT_FLIPPING_ARM)) {
                 motorMineralFlip1_.setTargetPosition(FLIP_LIFT_POS);
@@ -1166,10 +1180,38 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                     servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
                 }
             } else {
-                motorMineralFlip1_.setPower(0.0);
-                motorMineralFlip2_.setPower(0.0);
+	            if (isShortTripFlag_ == false) {
+	                motorMineralFlip1_.setPower(0.0);
+                    motorMineralFlip2_.setPower(0.0);
+                } else {
+	                motorMineralFlip1_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
+                    motorMineralFlip2_.setTargetPosition(MINERAL_FLIP_COLLECT_POS);
+                    motorMineralFlip1_.setPower(motorFlippyPower_);
+                    motorMineralFlip2_.setPower(motorFlippyPower_);
+                }
 
                 servoExtention_.setPosition(CR_SERVO_STOP);
+
+	            servoDump_.setPosition(DUMP_COLLECTION);
+
+	            if (isShortTripFlag_ == true) {
+	                double intake_start_time = (chk_start_time + TIME_TO_LIFT_FLIPPING_ARM +1.0);
+	                double intake_out_time = (intake_start_time + 4.0);
+                    double intake_stop_time = (intake_start_time + 4.5);
+
+	                // During short trips, turn on the intake
+
+	                if (currTime_ >= intake_start_time ) {
+                        if (currTime_<= intake_out_time) {
+                            motorIntake_.setPower(INTAKE_POWER_IN);
+                        } else if (currTime_ <= intake_stop_time) {
+	                        motorIntake_.setPower(INTAKE_POWER_OUT);
+                        } else {
+                            motorIntake_.setPower(INTAKE_POWER_BRAKE);
+	                    }
+
+                    }
+                }
             }
         }
 
