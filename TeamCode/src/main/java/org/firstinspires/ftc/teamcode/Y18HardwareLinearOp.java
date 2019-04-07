@@ -82,8 +82,8 @@ public class Y18HardwareLinearOp extends LinearOpMode {
     // Main arm holding servo
     Servo servoArmHolder_;
     static final boolean USE_SERVO_ARM_HOLDER = true;
-    static final double SERVO_ARM_HOLD_POS = 0.5;
-    static final double SERVO_ARM_RELEASE_POS = 0.82;
+    static final double SERVO_ARM_HOLD_POS = 0.2;
+    static final double SERVO_ARM_RELEASE_POS = 0.9;
     //static final double SERVO_ARM_INIT_POS = 0.0;
 
     // Front linear slide
