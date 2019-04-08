@@ -47,8 +47,9 @@ public class Y18TeleCrane extends Y18CommonCrane
    double arm_reset_start_time_ = 0.0;
 
    static final boolean AUTO_LIFT_CONTROL = true;  // automatically lower and rise the hangling lift
-   static int AUTO_LIFT_ENC = 5000 ;
-   static int AUTO_LIFT_UP_ENC = 1000 ;
+   static final int AUTO_LIFT_ENC = 5000 ;
+   static final int AUTO_LIFT_UP_ENC = 1000 ;
+   static final int LIFT_ENC_CNT_END_GAME = 9000;
 
    int last_crane_tg_enc_ = 0;
    double last_crane_power_ = 0.0;
@@ -71,8 +72,6 @@ public class Y18TeleCrane extends Y18CommonCrane
 
 
          //motorLF_.setMaxSpeed(4000);  // unavailable for SDK V3.10
-
-         if(USE_LIFT) motorLift_.setMode ( DcMotor.RunMode.STOP_AND_RESET_ENCODER);
       }
 
       if( USE_MECANUM_WHEELS ) {
@@ -98,6 +97,7 @@ public class Y18TeleCrane extends Y18CommonCrane
 
       } 
       if(USE_LIFT) {
+         motorLift_.setMode (DcMotor.RunMode.STOP_AND_RESET_ENCODER);
          motorLift_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER );
          servo_lift_pin_pos_ = LIFT_PIN_PULL;
          servo_lift_pin_.setPosition(servo_lift_pin_pos_);
@@ -206,6 +206,13 @@ public class Y18TeleCrane extends Y18CommonCrane
          }
       }
 
+      if (USE_SERVO_ARM_HOLDER && single_driver_== false) {
+         if (lsb1_cnt_%2==1) {
+            servoArmHolder_.setPosition(SERVO_ARM_RELEASE_POS);
+         } else {
+            servoArmHolder_.setPosition(SERVO_ARM_HOLD_POS);
+         }
+      }
 
       if( Math.abs(rsx) > 0.1 ) {
          /// Rotate/spin the robot
@@ -346,7 +353,7 @@ public class Y18TeleCrane extends Y18CommonCrane
             if( !manual_crane_control && ((single_driver_ && (a1_cnt_%2==1 || x1_cnt_%2==1)) || a2_cnt_%2==1 || x2_cnt_==1) ) {
                if( (single_driver_ && x1_cnt_%2 == 1) || x2_cnt_%2 == 1 ) {
                   crane_tg_enc = CRANE_COLLECT_POS; 
-                  a1_cnt_ = b1_cnt_ = 0; 
+                  a1_cnt_ = b1_cnt_ = 0;
                   a2_cnt_ = b2_cnt_ = 0;
                   if( AUTO_SWEEPER ) {
                      if( crane_enc > MIN_CRANE_ENC_START_SWEEPER+100 ) {
@@ -368,7 +375,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                   } else {
                      crane_tg_enc = CRANE_UP_POS; 
                   }
-                  b1_cnt_ = x1_cnt_ = 0; 
+                  b1_cnt_ = x1_cnt_ = 0;
                   b2_cnt_ = x2_cnt_ = 0; 
                   if( (single_driver_ && y1_cnt_==1) || y2_cnt_==1 ) {
                      y1_cnt_ = 2;    // stop sweeper, and ready for reverse
@@ -504,22 +511,34 @@ public class Y18TeleCrane extends Y18CommonCrane
          if( end_game_ || fast_low_sen_drive_ ) {
             if (gamepad1.dpad_up /*|| gamepad2.dpad_up*/) { // raise lift
                power_lift_ = LIFT_UP_POWER;
+               b1_cnt_ = 0;
             } else if (gamepad1.dpad_down /*|| gamepad2.dpad_down*/) {  // lower lift
                power_lift_ = LIFT_DOWN_POWER;
+               b1_cnt_ = 0;
             }
          }
 
-         if( power_lift_==0.0 && AUTO_LIFT_CONTROL ) {
-            int lift_enc = Math.abs(motorLift_.getCurrentPosition());
-            if( curr_time_<5.0 ) {
-               if (lift_enc < AUTO_LIFT_ENC) {
-                  power_lift_ = LIFT_UP_POWER;
-               }
-            } else if( curr_time_>100.0 && curr_time_<105.0 ) {
-               if (lift_enc > AUTO_LIFT_UP_ENC ) {
-                  power_lift_ = LIFT_DOWN_POWER;
-               }
-            }
+         if( power_lift_==0.0) {
+             if ( AUTO_LIFT_CONTROL ) {
+                 int lift_enc = Math.abs(motorLift_.getCurrentPosition());
+                 if( curr_time_<5.0 ) {
+                    if (lift_enc < AUTO_LIFT_ENC) {
+                        power_lift_ = LIFT_UP_POWER;
+                    }
+                 } else if( curr_time_>100.0 && curr_time_<105.0 ) {
+                     if (lift_enc > AUTO_LIFT_UP_ENC) {
+                        power_lift_ = LIFT_DOWN_POWER;
+                     }
+                 } else if (single_driver_== false) {
+                    if (curr_time_ < 105.0) {
+                       b1_cnt_ = 0;
+                    } else if ((b1_cnt_%2) == 1){
+                       if (lift_enc <= LIFT_ENC_CNT_END_GAME) {
+                          power_lift_ = LIFT_UP_POWER;
+                       }
+                    }
+                 }
+             }
          }
 
          motorLift_.setPower(power_lift_);
@@ -549,7 +568,6 @@ public class Y18TeleCrane extends Y18CommonCrane
             servo_stab_wheel_.setPosition( STAB_WHEEL_RELEASE ); 
          }
       }
-
 
       if( ALLOW_FLIP_ROBOT ) {
       /// Flip robot by gamepad1 left jobstick button 

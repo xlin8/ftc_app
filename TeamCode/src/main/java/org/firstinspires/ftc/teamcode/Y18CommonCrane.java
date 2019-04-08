@@ -127,6 +127,7 @@ public class Y18CommonCrane extends OpMode {
    static final double  MIN_LIFT_HOLD_POWER = 0.05;        // min power to hold the lift
    static final double  MIN_LIFT_POWER = 0.0;
 
+
    Servo  servo_lift_pin_;                                 // Servo for lift pin
    double servo_lift_pin_pos_;                            // Lift pin servo position
    //static final double  LIFT_PIN_STOP = 0.0;              // INIT position, switch to 180-servo, 2018/11/30
@@ -138,6 +139,12 @@ public class Y18CommonCrane extends OpMode {
    Servo  servo_stab_wheel_;                                // Servo for hold/release the back stabilization wheels
    static final double  STAB_WHEEL_INIT = 0.5;              // INIT position, hold the wheels
    static final double  STAB_WHEEL_RELEASE = 0.4;           // release the wheels
+
+   // Main arm holding servo
+   Servo servoArmHolder_;
+   static final boolean USE_SERVO_ARM_HOLDER = true;
+   static final double SERVO_ARM_HOLD_POS = 0.2;
+   static final double SERVO_ARM_RELEASE_POS = 0.9;
 
    //CR SERVO STOP
 
@@ -200,6 +207,11 @@ public class Y18CommonCrane extends OpMode {
          motor_crane_.setMode( DcMotor.RunMode.STOP_AND_RESET_ENCODER );
          motor_crane_.setDirection(DcMotor.Direction.REVERSE);  // flip encoder count sign; need for NR60 and GF53; NO NEED for direct drive
          if( RUN_CRANE_ENC_POS ) motor_crane_.setTargetPosition(0);
+
+         if (USE_SERVO_ARM_HOLDER) {
+            servoArmHolder_ = hardwareMap.servo.get("servoArmHolder");
+            servoArmHolder_.setPosition(SERVO_ARM_HOLD_POS);
+         }
 
          if( USE_CRANE_DOUBLE ) {
             //motor_crane2_ = hardwareMap.dcMotor.get("motor_crane2");
