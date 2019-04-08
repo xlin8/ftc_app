@@ -49,7 +49,7 @@ public class Y18TeleCrane extends Y18CommonCrane
    static final boolean AUTO_LIFT_CONTROL = true;  // automatically lower and rise the hangling lift
    static final int AUTO_LIFT_ENC = 5000 ;
    static final int AUTO_LIFT_UP_ENC = 1000 ;
-   static final int LIFT_ENC_CNT_END_GAME = 9000;
+   static final int LIFT_ENC_CNT_END_GAME = 10000;
 
    int last_crane_tg_enc_ = 0;
    double last_crane_power_ = 0.0;
@@ -353,7 +353,10 @@ public class Y18TeleCrane extends Y18CommonCrane
             if( !manual_crane_control && ((single_driver_ && (a1_cnt_%2==1 || x1_cnt_%2==1)) || a2_cnt_%2==1 || x2_cnt_==1) ) {
                if( (single_driver_ && x1_cnt_%2 == 1) || x2_cnt_%2 == 1 ) {
                   crane_tg_enc = CRANE_COLLECT_POS; 
-                  a1_cnt_ = b1_cnt_ = 0;
+                  a1_cnt_ = 0;
+                  if (single_driver_ == true) {
+                     b1_cnt_ = 0;
+                  }
                   a2_cnt_ = b2_cnt_ = 0;
                   if( AUTO_SWEEPER ) {
                      if( crane_enc > MIN_CRANE_ENC_START_SWEEPER+100 ) {
@@ -375,7 +378,10 @@ public class Y18TeleCrane extends Y18CommonCrane
                   } else {
                      crane_tg_enc = CRANE_UP_POS; 
                   }
-                  b1_cnt_ = x1_cnt_ = 0;
+                  x1_cnt_ = 0;
+                  if (single_driver_ == true) {
+                     b1_cnt_ = 0;
+                  }
                   b2_cnt_ = x2_cnt_ = 0; 
                   if( (single_driver_ && y1_cnt_==1) || y2_cnt_==1 ) {
                      y1_cnt_ = 2;    // stop sweeper, and ready for reverse
@@ -529,7 +535,7 @@ public class Y18TeleCrane extends Y18CommonCrane
                      if (lift_enc > AUTO_LIFT_UP_ENC) {
                         power_lift_ = LIFT_DOWN_POWER;
                      }
-                 } else if (single_driver_== false) {
+                 } else if ( single_driver_ == false) {
                     if (curr_time_ < 105.0) {
                        b1_cnt_ = 0;
                     } else if ((b1_cnt_%2) == 1){
