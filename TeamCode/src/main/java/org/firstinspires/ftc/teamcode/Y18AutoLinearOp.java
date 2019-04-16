@@ -1179,6 +1179,8 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
                 if (currTime_ >= (chk_start_time + 0.5)) {
                     servoExtention_.setPosition(SERVO_EXTENTION_OUT_POSITION);
                 }
+
+                if(isShortTripFlag_) servoDump_.setPosition(DUMP_UP+0.1); // lift box to ensure the arm land on mat
             } else {
 	            if (isShortTripFlag_ == false) {
 	                motorMineralFlip1_.setPower(0.0);
@@ -1192,7 +1194,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 
                 servoExtention_.setPosition(CR_SERVO_STOP);
 
-	            servoDump_.setPosition(DUMP_COLLECTION);
+	            if( !isShortTripFlag_ ) servoDump_.setPosition(DUMP_COLLECTION);
 
 	            if (isShortTripFlag_ == true) {
 	                double intake_start_time = (chk_start_time + TIME_TO_LIFT_FLIPPING_ARM +1.0);
@@ -1202,6 +1204,7 @@ public class Y18AutoLinearOp extends Y18HardwareLinearOp
 	                // During short trips, turn on the intake
 
 	                if (currTime_ >= intake_start_time ) {
+                        servoDump_.setPosition(DUMP_COLLECTION);
                         if (currTime_<= intake_out_time) {
                             motorIntake_.setPower(INTAKE_POWER_IN);
                         } else if (currTime_ <= intake_stop_time) {
