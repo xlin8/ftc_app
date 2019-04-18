@@ -210,7 +210,7 @@ public class Y18CommonCrane extends OpMode {
 
          if (USE_SERVO_ARM_HOLDER) {
             servoArmHolder_ = hardwareMap.servo.get("servoArmHolder");
-            servoArmHolder_.setPosition(SERVO_ARM_HOLD_POS);
+            //servoArmHolder_.setPosition(SERVO_ARM_HOLD_POS);
          }
 
          if( USE_CRANE_DOUBLE ) {
